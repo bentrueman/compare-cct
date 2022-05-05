@@ -1,0 +1,14 @@
+Analyte,Location,Period,Median,1st quartile,3rd quartile,N,Units
+Alkalinity,Treated water,Comprehensive,123,114,131,1520,mg/L
+Aluminum,LP[1-3]A,Comprehensive,0.049,0.027,0.081,549,mg/L
+Colour,Treated water,Comprehensive,0.893,0.671,1.16,1520,TCU
+Conductivity,Treated water,Comprehensive,387,367,408,1520,µmho
+Fluoride,Treated water,Comprehensive,0.661,0.12,0.69,1520,mg/L
+Manganese,LP[1-3]A,Comprehensive,0.005,0.003,0.007,551,mg/L
+Ortho-P Residual,LP1A,Comprehensive,0.49,0.46,0.52,142,mg/L as P
+Ortho-P Residual,LP2A,Comprehensive,0.94,0.87,1,185,mg/L as P
+Ortho-P Residual,LP3A,Dose 1,1.89,1.72,1.96,54,mg/L as P
+Ortho-P Residual,LP3A,Dose 2,0.73,0.68,0.76,130,mg/L as P
+pH,LP[1-3]A,Comprehensive,7.92,7.78,8.04,330,pH
+Total Hardness,Treated water,Comprehensive,169,161,171,1230,mg/L
+Turbidity,Treated water,Comprehensive,0.0529,0.0456,0.06,1520,NTU

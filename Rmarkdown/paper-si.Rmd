@@ -1,0 +1,94 @@
+---
+title: "Supplementary information for *Comparing corrosion control treatments using a robust Bayesian generalized additive model*"
+author: "Benjamin F. Trueman^§^, Wendell James^†^, Trevor Shu^†^, Evelyne Dor&eacute;^§^, and Graham A. Gagnon^§^"
+date: "^§^Centre for Water Resources Studies, Department of Civil & Resource Engineering, Dalhousie University, 1360 Barrington St., Halifax, NS, CAN B3H 4R2    \n&nbsp;    \n&nbsp;^†^EPCOR Water Services, Edmonton, AB, CAN"
+output:
+  word_document:
+    keep_md: no
+    reference_docx: StylesTemplate.docx
+  html_document: default
+bibliography: references.bib
+csl: environmental-science-and-technology.csl
+---
+
+```{r setup, include=FALSE}
+here::i_am("Rmarkdown/paper-si.Rmd")
+knitr::opts_chunk$set(echo = FALSE)
+library("dplyr")
+library("stringr")
+
+ortho_time <- readr::read_csv(here::here("data-clean/ortho-timeline.csv"))
+flows <- readr::read_csv(here::here("data-clean/flow-schedule.csv"))
+chlorine <- readr::read_csv(here::here("data-clean/chlorine-timeline.csv"))
+wq <- readr::read_csv(here::here("data-clean/wq-summary.csv"))
+```
+
+This document contains 5 figures, 4 tables, and 10 pages.
+
+```{r table-s1}
+
+options(knitr.kable.NA = ".")
+
+ortho_time %>% 
+  knitr::kable(caption = "**Table S1.** Orthophosphate dosing schedule.")
+
+```
+
+```{r table-s2}
+chlorine %>% 
+  knitr::kable(caption = "**Table S2.** Total chlorine in pipe section influent (mg L^-1^).")
+```
+
+```{r table-s3}
+
+flows %>% 
+  rename_all(str_to_sentence) %>% 
+  knitr::kable(caption = "**Table S3.** Pipe array flow schedule; sampling occurred at T4, and FY-001, -002, and -003 are defined in Figure S1.")
+
+```
+
+```{r table-s4}
+
+wq %>% 
+  relocate(Units, .after = Analyte) %>% 
+  mutate(Location = if_else(Location == "Treated water", "Treated", Location)) %>% 
+  knitr::kable(caption = "**Table S4.** Water quality summary.")
+
+```
+
+
+```{r figure-s1, fig.cap="**Figure S1.** Schematic of the pipe loop system."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s1.png"))
+```
+
+```{r figure-s2, fig.cap="**Figure S2.** Choice of prior did not appear to have a strong impact on the posterior distribution."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s2.png"))
+```
+
+Figures S3--4 and S6--7 summarize the parameters of models fitted to observed and simulated data, respectively, including all of the spline coefficients (the weights applied to the basis functions). The statistic $\widehat{R}$ is a convergence metric; at convergence $\widehat{R}$ is equal to 1, and an $\widehat{R}$ less than 1.1 is usually taken to represent approximate convergence [@gelman_bayesian_2014]. Here, all $\widehat{R}$ values were less than 1.05. The effective sample size $N_{eff}$ measures the amount by which autocorrelation in the MCMC chains increases uncertainty in the parameter estimates. That is, $N_{eff}$ has the same estimation power as the $N$ autocorrelated samples. An effective sample size greater than 100 per chain is considered adequate. Here, effective sample sizes for all parameters exceeded this threshold. 
+
+```{r figure-s3, fig.cap="**Figure S3.** Summary of model parameters and convergence statistics (dissolved lead model). Medians calculated from the posterior distributions of the **(a)** spline coefficients, **(b)** other parameters (as labelled), **(c)** random intercepts, and **(d)** standard deviations of the group-level multiyear splines. Error bars span the middle 95% of each distribution. $\\widehat{R}$, a convergence statistic, is mapped to point colour and size."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s3.png"))
+```
+
+```{r figure-s4, fig.cap="**Figure S4.** Summary of model parameters and convergence statistics (particulate lead model). Medians calculated from the posterior distributions of the **(a)** spline coefficients, **(b)** other parameters (as labelled), **(c)** random intercepts, and **(d)** standard deviations of the group-level multiyear splines. Error bars span the middle 95% of each distribution. $\\widehat{R}$, a convergence statistic, is mapped to point colour and size."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s4.png"))
+```
+
+```{r figure-s5, fig.cap="**Figure S5.** In the model fitted to simulated data, **(a)** Seasonal component of the trend in dissolved lead. **(b)** Global multiyear component of the trend in dissolved and particulate lead. **(c)** Group-level (i.e., pipe-specific) multiyear trends in dissolved and particulate lead, representing the deviations of each time series from the global multiyear trend. In panels **(a--b)**, shaded regions span the middle 95% of the posterior distribution, and 200 draws from that posterior are superimposed in blue. All plots are shown on the transformed scale and centered."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s5.png"))
+```
+
+```{r figure-s6, fig.cap="**Figure S6.** Summary of model parameters and convergence statistics (dissolved lead model fitted to simulated data). Medians calculated from the posterior distributions of the **(a)** spline coefficients, **(b)** other parameters (as labelled), **(c)** random intercepts, and **(d)** standard deviations of the group-level multiyear splines. Error bars span the middle 95% of each distribution. $\\widehat{R}$, a convergence statistic, is mapped to point colour and size."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s6.png"))
+```
+
+```{r figure-s7, fig.cap="**Figure S7.** Summary of model parameters and convergence statistics (particulate lead model fitted to simulated data). Medians calculated from the posterior distributions of the **(a)** spline coefficients, **(b)** other parameters (as labelled), **(c)** random intercepts, and **(d)** standard deviations of the group-level multiyear splines. Error bars span the middle 95% of each distribution. $\\widehat{R}$, a convergence statistic, is mapped to point colour and size."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s7.png"))
+```
+
+```{r figure-s8, fig.cap="**Figure S8.** Simulated residuals, grouped by orthophosphate dosing protocol and pipe material. Points represent medians summarizing 4000 draws from the posterior, and error bars span the 95% credible intervals."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s8.png"))
+```
+
+# References  

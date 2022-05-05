@@ -1,0 +1,25 @@
+Time Point,Actual Time (daylight time),Actual Time (summer time),Actions
+T0,0200 hrs,0300 hrs,"FY - 001, 002, 003 open"
+T1,0229 hrs 50 secs,0329 hrs 50 secs,FY- 001 close
+T2,0230 hrs,0330 hrs,FY - 002 close
+T3,0230 hrs 10 secs,0330 hrs 10 secs,FY - 003 close
+T4,0830 hrs,0930 hrs,"FY - 001, 002, 003 open"
+T5,0834 hrs 50 secs,0934 hrs 50 secs,FY-001 close
+T6,0835 hrs,0935 hrs,FY-002 close
+T7,0835 hrs 10 secs,0935 hrs 10 secs,FY-003 close
+T8,0915 hrs,1015 hrs,"FY - 001, 002, 003 open"
+T9,1014 hrs 50 secs,1114 hrs 50 secs,FY-001 close
+T10,1015 hrs,115 hrs,FY-002 close
+T11,1015 hrs 10 secs,1115 hrs 10 secs,FY-003 close
+T12,1230 hrs,1330 hrs,"FY - 001, 002, 003 open"
+T13,1329 hrs 50 secs,1429 hrs 50 secs,FY-001 close
+T14,1330 hrs,1430 hrs,FY-002 close
+T15,1330 hrs 10 secs,1430 hrs 10 secs,FY-003 close
+T16,1730 hrs,1830 hrs,"FY - 001, 002, 003 open"
+T17,1929 hrs 50 secs,2029 hrs 50 secs,FY-001 close
+T18,1930 hrs,2030 hrs,FY-002 close
+T19,1930 hrs 10 sec,2030 hrs 10 sec,FY-003 close
+T20,2330 hrs,0030 hrs,"FY - 001, 002, 003 open"
+T21,2359 hrs 50 secs,0059 hrs 50 secs,FY-001 close
+T22,0000 hrs,0100 hrs,FY-002 close
+T23,0000 hrs 10 secs,0100 hrs 10 secs,FY-003 close

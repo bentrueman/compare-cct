@@ -1,0 +1,515 @@
+
+
+@article{pedersen_hierarchical_2019,
+	title = {Hierarchical generalized additive models in ecology: an introduction with mgcv},
+	volume = {7},
+	issn = {2167-8359},
+	shorttitle = {Hierarchical generalized additive models in ecology},
+	url = {https://peerj.com/articles/6876},
+	doi = {10.7717/peerj.6876},
+	abstract = {In this paper, we discuss an extension to two popular approaches to modeling complex structures in ecological data: the generalized additive model (GAM) and the hierarchical model (HGLM). The hierarchical GAM (HGAM), allows modeling of nonlinear functional relationships between covariates and outcomes where the shape of the function itself varies between different grouping levels. We describe the theoretical connection between HGAMs, HGLMs, and GAMs, explain how to model different assumptions about the degree of intergroup variability in functional response, and show how HGAMs can be readily fitted using existing GAM software, the
+              mgcv
+              package in R. We also discuss computational and statistical issues with fitting these models, and demonstrate how to fit HGAMs on example data. All code and data used to generate this paper are available at:
+              github.com/eric-pedersen/mixed-effect-gams
+              .},
+	language = {en},
+	urldate = {2020-06-04},
+	journal = {PeerJ},
+	author = {Pedersen, Eric J. and Miller, David L. and Simpson, Gavin L. and Ross, Noam},
+	month = may,
+	year = {2019},
+	pages = {e6876},
+	file = {Full Text:/Users/cwrs/Zotero/storage/Y7T6VBFS/Pedersen et al. - 2019 - Hierarchical generalized additive models in ecolog.pdf:application/pdf},
+}
+
+
+@Book{mgcv,
+  title = {Generalized Additive Models: An Introduction with R},
+  year = {2017},
+  author = {S.N Wood},
+  edition = {2},
+  publisher = {Chapman and Hall/CRC},
+}
+
+
+@book{helsel_statistics_2012,
+	address = {Hoboken, N.J},
+	edition = {2nd},
+	series = {Wiley series in statistics in practice},
+	title = {Statistics for censored environmental data using {Minitab} and {R}},
+	isbn = {978-0-470-47988-9},
+	publisher = {Wiley},
+	author = {Helsel, Dennis R.},
+	year = {2012},
+	note = {OCLC: ocn748290711},
+	keywords = {Environmental sciences, Measurement Statistical methods, Minitab, Pollution, R (Computer program language), Statistical methods},
+	annote = {Rev. ed. of: Nondetects and data analysis / Dennis R. Helsel. 2005},
+}
+
+
+
+@article{wang_carx_2017,
+	title = {carx: an {R} {Package} to {Estimate} {Censored} {Autoregressive} {Time} {Series} with {Exogenous} {Covariates}},
+	volume = {9},
+	issn = {2073-4859},
+	shorttitle = {carx},
+	url = {https://journal.r-project.org/archive/2017/RJ-2017-064/index.html},
+	doi = {10.32614/RJ-2017-064},
+	language = {en},
+	number = {2},
+	urldate = {2021-09-22},
+	journal = {The R Journal},
+	author = {Wang, Chao and Chan, Kung-Sik},
+	year = {2017},
+	pages = {213},
+	file = {Full Text:/Users/cwrs/Zotero/storage/6UH7ZQA7/Wang and Chan - 2017 - carx an R Package to Estimate Censored Autoregres.pdf:application/pdf},
+}
+
+@book{helsel1992statistical,
+  title={Statistical methods in water resources},
+  author={Helsel, Dennis R and Hirsch, Robert M},
+  volume={49},
+  year={1992},
+  publisher={Elsevier}
+}
+
+@online{rstan,
+    title = {{RStan: the {R} interface to Stan}},
+    author = {{Stan Development Team}},
+    note = {R package version 2.26.3},
+    url = {https://mc-stan.org/},
+    year = 2021
+  }
+  
+@online{stan2021,
+    title = {Stan Modeling Language Users Guide and Reference Manual, Version 2.18.0},
+    author = {{Stan Development Team}},
+    year = {2021},
+    url = {http://mc-stan.org/},
+  }
+  
+@online{loo,
+  title = {loo: Efficient leave-one-out cross-validation and WAIC for Bayesian models},
+  author = {Aki Vehtari and Jonah Gabry and Mans Magnusson and Yuling Yao and Paul-Christian Bürkner and Topi Paananen and Andrew Gelman},
+  year = {2020},
+  note = {R package version 2.4.1},
+  url = {https://mc-stan.org/loo/},
+}
+
+@Article{loo_paper,
+  title = {Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC},
+  author = {Aki Vehtari and Andrew Gelman and Jonah Gabry},
+  year = {2017},
+  journal = {Statistics and Computing},
+  volume = {27},
+  issue = {5},
+  pages = {1413--1432},
+  doi = {10.1007/s11222-016-9696-4},
+}
+
+@Article{brms,
+  title = {{brms}: An {R} Package for {Bayesian} Multilevel Models Using {Stan}},
+  author = {Paul-Christian Bürkner},
+  journal = {Journal of Statistical Software},
+  year = {2017},
+  volume = {80},
+  number = {1},
+  pages = {1--28},
+  doi = {10.18637/jss.v080.i01},
+  encoding = {UTF-8},
+}
+
+@Article{brms_adv,
+  title = {Advanced {Bayesian} Multilevel Modeling with the {R} Package {brms}},
+  author = {Paul-Christian Bürkner},
+  journal = {The R Journal},
+  year = {2018},
+  volume = {10},
+  number = {1},
+  pages = {395--411},
+  doi = {10.32614/RJ-2018-017},
+  encoding = {UTF-8},
+}
+
+
+@book{gelman_bayesian_2014,
+	address = {Boca Raton},
+	edition = {Third edition},
+	series = {Chapman \& {Hall}/{CRC} texts in statistical science},
+	title = {Bayesian data analysis},
+	isbn = {978-1-4398-4095-5},
+	abstract = {"Preface This book is intended to have three roles and to serve three associated audiences: an introductory text on Bayesian inference starting from first principles, a graduate text on effective current approaches to Bayesian modeling and computation in statistics and related fields, and a handbook of Bayesian methods in applied statistics for general users of and researchers in applied statistics. Although introductory in its early sections, the book is definitely not elementary in the sense of a first text in statistics. The mathematics used in our book is basic probability and statistics, elementary calculus, and linear algebra. A review of probability notation is given in Chapter 1 along with a more detailed list of topics assumed to have been studied. The practical orientation of the book means that the reader's previous experience in probability, statistics, and linear algebra should ideally have included strong computational components. To write an introductory text alone would leave many readers with only a taste of the conceptual elements but no guidance for venturing into genuine practical applications, beyond those where Bayesian methods agree essentially with standard non-Bayesian analyses. On the other hand, we feel it would be a mistake to present the advanced methods without first introducing the basic concepts from our data-analytic perspective. Furthermore, due to the nature of applied statistics, a text on current Bayesian methodology would be incomplete without a variety of worked examples drawn from real applications. To avoid cluttering the main narrative, there are bibliographic notes at the end of each chapter and references at the end of the book"--},
+	publisher = {CRC Press},
+	author = {Gelman, Andrew and Carlin, John B. and Stern, Hal S. and Dunson, David, B. and Vehtari, Aki and Rubin, Donald B.},
+	year = {2014},
+	keywords = {Bayesian statistical decision theory, MATHEMATICS / Probability \& Statistics / General},
+}
+
+
+@article{masters_increased_2015,
+	title = {Increased {Lead} in {Water} {Associated} with {Iron} {Corrosion}},
+	volume = {32},
+	issn = {1092-8758, 1557-9018},
+	url = {http://www.liebertpub.com/doi/10.1089/ees.2014.0400},
+	doi = {10.1089/ees.2014.0400},
+	language = {en},
+	number = {5},
+	urldate = {2020-05-12},
+	journal = {Environmental Engineering Science},
+	author = {Masters, Sheldon and Edwards, Marc},
+	month = may,
+	year = {2015},
+	pages = {361--369},
+}
+
+@article{masters_seasonal_2016,
+	title = {Seasonal {Variations} in {Lead} {Release} to {Potable} {Water}},
+	volume = {50},
+	issn = {0013-936X, 1520-5851},
+	url = {https://pubs.acs.org/doi/10.1021/acs.est.5b05060},
+	doi = {10.1021/acs.est.5b05060},
+	language = {en},
+	number = {10},
+	urldate = {2020-10-22},
+	journal = {Environmental Science \& Technology},
+	author = {Masters, Sheldon and Welter, Gregory J. and Edwards, Marc},
+	month = may,
+	year = {2016},
+	pages = {5269--5277},
+}
+
+
+@article{arnold_potential_2012,
+	title = {Potential {Reversal} and the {Effects} of {Flow} {Pattern} on {Galvanic} {Corrosion} of {Lead}},
+	volume = {46},
+	issn = {0013-936X, 1520-5851},
+	url = {https://pubs.acs.org/doi/10.1021/es3017396},
+	doi = {10.1021/es3017396},
+	language = {en},
+	number = {20},
+	urldate = {2022-01-13},
+	journal = {Environmental Science \& Technology},
+	author = {Arnold, Roger B. and Edwards, Marc},
+	month = oct,
+	year = {2012},
+	pages = {10941--10947},
+}
+
+
+@article{dore_study_2019,
+	title = {Study of the long-term impacts of treatments on lead release from full and partially replaced harvested lead service lines},
+	volume = {149},
+	issn = {00431354},
+	url = {https://linkinghub.elsevier.com/retrieve/pii/S0043135418309667},
+	doi = {10.1016/j.watres.2018.11.037},
+	language = {en},
+	urldate = {2020-07-15},
+	journal = {Water Research},
+	author = {Doré, Evelyne and Deshommes, Elise and Laroche, Laurent and Nour, Shokoufeh and Prévost, Michèle},
+	month = feb,
+	year = {2019},
+	pages = {566--577},
+}
+
+@article{edwards_role_2004,
+	title = {Role of chlorine and chloramine in corrosion of lead‐bearing plumbing materials},
+	volume = {96},
+	issn = {0003-150X, 1551-8833},
+	url = {https://onlinelibrary.wiley.com/doi/10.1002/j.1551-8833.2004.tb10724.x},
+	doi = {10.1002/j.1551-8833.2004.tb10724.x},
+	language = {en},
+	number = {10},
+	urldate = {2022-01-21},
+	journal = {Journal AWWA},
+	author = {Edwards, Marc and Dudi, Abhijeet},
+	month = oct,
+	year = {2004},
+	pages = {69--81},
+}
+
+
+@article{trueman_galvanic_2017,
+	title = {Galvanic {Corrosion} of {Lead} by {Iron} ({Oxyhydr}){Oxides}: {Potential} {Impacts} on {Drinking} {Water} {Quality}},
+	volume = {51},
+	issn = {0013-936X, 1520-5851},
+	shorttitle = {Galvanic {Corrosion} of {Lead} by {Iron} ({Oxyhydr}){Oxides}},
+	url = {https://pubs.acs.org/doi/10.1021/acs.est.7b01671},
+	doi = {10.1021/acs.est.7b01671},
+	language = {en},
+	number = {12},
+	urldate = {2020-05-29},
+	journal = {Environmental Science \& Technology},
+	author = {Trueman, Benjamin F. and Sweet, Gregory A. and Harding, Matthew D. and Estabrook, Hayden and Bishop, D. Paul and Gagnon, Graham A.},
+	month = jun,
+	year = {2017},
+	pages = {6812--6820},
+	file = {Full Text:/Users/cwrs/Zotero/storage/98F6PQY3/Trueman et al. - 2017 - Galvanic Corrosion of Lead by Iron (Oxyhydr)Oxides.pdf:application/pdf},
+}
+
+@article{trueman_understanding_2016,
+	title = {Understanding the {Role} of {Particulate} {Iron} in {Lead} {Release} to {Drinking} {Water}},
+	volume = {50},
+	issn = {0013-936X, 1520-5851},
+	url = {https://pubs.acs.org/doi/10.1021/acs.est.6b01153},
+	doi = {10.1021/acs.est.6b01153},
+	language = {en},
+	number = {17},
+	urldate = {2020-09-02},
+	journal = {Environmental Science \& Technology},
+	author = {Trueman, Benjamin F. and Gagnon, Graham A.},
+	month = sep,
+	year = {2016},
+	pages = {9053--9060},
+}
+
+
+@article{wysock_statistical_1995,
+	title = {Statistical procedures for corrosion studies},
+	volume = {87},
+	issn = {0003150X},
+	url = {https://onlinelibrary.wiley.com/doi/10.1002/j.1551-8833.1995.tb06397.x},
+	doi = {10.1002/j.1551-8833.1995.tb06397.x},
+	language = {en},
+	number = {7},
+	urldate = {2022-01-25},
+	journal = {Journal - American Water Works Association},
+	author = {Wysock, Barbara M. and Sandvig, Anne M. and Schock, Micheal R. and Frebis, Christopher P. and Prokop, Boris},
+	month = jul,
+	year = {1995},
+	pages = {99--112},
+}
+
+
+@article{estessmargiassi_understanding_2020,
+	title = {Understanding the {Proposed} {Revisions} to the {Lead} and {Copper} {Rule}},
+	volume = {112},
+	issn = {0003-150X, 1551-8833},
+	url = {https://onlinelibrary.wiley.com/doi/10.1002/awwa.1458},
+	doi = {10.1002/awwa.1458},
+	language = {en},
+	number = {3},
+	urldate = {2022-01-26},
+	journal = {Journal AWWA},
+	author = {Estes‐Smargiassi, Stephen and Cornwell, David and Slabaugh, Rebecca and Via, Steve},
+	month = mar,
+	year = {2020},
+	pages = {6--15},
+}
+
+
+@book{mcelreath_statistical_2016,
+	address = {Boca Raton},
+	series = {Chapman \& {Hall}/{CRC} texts in statistical science series},
+	title = {Statistical rethinking: a {Bayesian} course with examples in {R} and {Stan}},
+	isbn = {978-1-4822-5344-3},
+	shorttitle = {Statistical rethinking},
+	number = {122},
+	publisher = {CRC Press/Taylor \& Francis Group},
+	author = {McElreath, Richard},
+	year = {2016},
+	keywords = {R (Computer program language), Bayesian statistical decision theory},
+	annote = {"A CRC title."},
+}
+
+@online{sm_3125,
+  title = {Standard method 3125 {Metals} by inductively coupled plasma—mass spectrometry.},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.048},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.048},
+}
+
+@online{sm_2320b,
+  title = {{2320B Alkalinity by titration}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.023},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.023}
+}
+
+@online{sm_2120c,
+  title = {{2120C Color in water by spectrophotometry}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.017},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.017}
+}
+
+@online{sm_2510b,
+  title = {{2510B Conductivity}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.027},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.027}
+}
+
+@online{sm_4500,
+  title = {{4500-F<sup>-</sup>C Fluoride by ion-selective electrode}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.081},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.081}
+}
+
+
+@online{sm_2340,
+  title = {{2340B,C Hardness}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.025},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.025}
+}
+
+@online{sm_2130b,
+  title = {{2130B Turbidity by nephelometry}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.018},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.018},
+}
+
+@online{sm_4500_p_e,
+  title = {{4500-P-E Phosphorus by ascorbic acid}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.093},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.093}
+}
+
+@online{sm_4500_cl_g,
+  title = {{4500-Cl-G Chlorine by DPD}},
+  booktitle = {Standard Methods For the Examination of Water and Wastewater},
+  author = {{American Public Health Association}},
+  year = {2018},
+  URL = {https://www.standardmethods.org/doi/abs/10.2105/SMWW.2882.078},
+  eprint = {https://www.standardmethods.org/doi/pdf/10.2105/SMWW.2882.078}
+}
+
+@article{simpson_modelling_2018,
+	title = {Modelling {Palaeoecological} {Time} {Series} {Using} {Generalised} {Additive} {Models}},
+	volume = {6},
+	issn = {2296-701X},
+	url = {https://www.frontiersin.org/article/10.3389/fevo.2018.00149/full},
+	doi = {10.3389/fevo.2018.00149},
+	urldate = {2020-07-08},
+	journal = {Frontiers in Ecology and Evolution},
+	author = {Simpson, Gavin L.},
+	month = oct,
+	year = {2018},
+	pages = {149},
+	file = {Full Text:/Users/cwrs/Zotero/storage/3VPCH7YE/Simpson - 2018 - Modelling Palaeoecological Time Series Using Gener.pdf:application/pdf},
+}
+
+@incollection{schock1996corr,
+  author       = {M. R. Schock and I. Wagner and R. J. Oliphant}, 
+  title        = {{Corrosion and solubility of lead in drinking water}},
+  booktitle    = {{Internal corrosion of water distribution systems}},
+  chapter      = 4,
+  pages        = {131-230},
+  publisher    = {American Water Works Association Research Foundation},
+  year         = 1996,
+  address      = {Denver, CO},
+  edition      = 2
+}
+
+
+@article{lytle_lead_2020,
+	title = {Lead {Particle} {Size} {Fractionation} and {Identification} in {Newark}, {New} {Jersey}’s {Drinking} {Water}},
+	volume = {54},
+	issn = {0013-936X, 1520-5851},
+	url = {https://pubs.acs.org/doi/10.1021/acs.est.0c03797},
+	doi = {10.1021/acs.est.0c03797},
+	language = {en},
+	number = {21},
+	urldate = {2020-11-12},
+	journal = {Environmental Science \& Technology},
+	author = {Lytle, Darren A. and Schock, Michael R. and Formal, Casey and Bennett-Stamper, Christina and Harmon, Stephen and Nadagouda, Mallikarjuna N. and Williams, Daniel and DeSantis, Michael K. and Tully, Jennifer and Pham, Maily},
+	month = nov,
+	year = {2020},
+	pages = {13672--13679},
+}
+
+
+@article{zhao_formation_2018,
+	title = {Formation and {Aggregation} of {Lead} {Phosphate} {Particles}: {Implications} for {Lead} {Immobilization} in {Water} {Supply} {Systems}},
+	volume = {52},
+	issn = {0013-936X, 1520-5851},
+	shorttitle = {Formation and {Aggregation} of {Lead} {Phosphate} {Particles}},
+	url = {https://pubs.acs.org/doi/10.1021/acs.est.8b02788},
+	doi = {10.1021/acs.est.8b02788},
+	language = {en},
+	number = {21},
+	urldate = {2021-03-08},
+	journal = {Environmental Science \& Technology},
+	author = {Zhao, Juntao and Giammar, Daniel E. and Pasteris, Jill D. and Dai, Chong and Bae, Yeunook and Hu, Yandi},
+	month = nov,
+	year = {2018},
+	pages = {12612--12623},
+	file = {Submitted Version:/Users/cwrs/Zotero/storage/M6WPQS86/Zhao et al. - 2018 - Formation and Aggregation of Lead Phosphate Partic.pdf:application/pdf},
+}
+
+@Article{tidyverse,
+    title = {Welcome to the{tidyverse}},
+    author = {Hadley Wickham and Mara Averick and Jennifer Bryan and Winston Chang and Lucy D'Agostino McGowan and Romain François and Garrett Grolemund and Alex Hayes and Lionel Henry and Jim Hester and Max Kuhn and Thomas Lin Pedersen and Evan Miller and Stephan Milton Bache and Kirill Müller and Jeroen Ooms and David Robinson and Dana Paige Seidel and Vitalie Spinu and Kohske Takahashi and Davis Vaughan and Claus Wilke and Kara Woo and Hiroaki Yutani},
+    year = {2019},
+    journal = {Journal of Open Source Software},
+    volume = {4},
+    number = {43},
+    pages = {1686},
+    doi = {10.21105/joss.01686},
+  }
+  
+@online{nada,
+    title = {{NADA}: Nondetects and Data Analysis for Environmental Data},
+    author = {Lopaka Lee},
+    year = {2020},
+    note = {R package version 1.6-1.1},
+    url = {https://CRAN.R-project.org/package=NADA},
+  }
+  
+@online{assertr,
+    title = {{assertr}: Assertive Programming for R Analysis Pipelines},
+    author = {Tony Fischetti},
+    year = {2021},
+    note = {R package version 2.8},
+    url = {https://CRAN.R-project.org/package=assertr},
+  }
+
+@online{janitor,
+    title = {{janitor}: Simple Tools for Examining and Cleaning Dirty Data},
+    author = {Sam Firke},
+    year = {2021},
+    note = {R package version 2.1.0},
+    url = {https://CRAN.R-project.org/package=janitor},
+  }
+  
+@online{datatable,
+    title = {{data.table: Extension of `data.frame`}},
+    author = {Matt Dowle and Arun Srinivasan},
+    year = {2021},
+    note = {R package version 1.14.2},
+    url = {https://CRAN.R-project.org/package=data.table},
+  }
+  
+@online{bgamcar1,
+    title = {{bgamcar1: Fit GAMs With CAR(1) Errors To Left-censored Data}},
+    author = {Benjamin Trueman},
+    year = {2022},
+    note = {R package version 0.0.0.9000},
+    url = {https://github.com/bentrueman/bgamcar1},
+  }
+  
+@online{compare_cct,
+    title = {{Source code for "Comparing corrosion control treatments using a robust Bayesian generalized additive model"}},
+    author = {Benjamin Trueman},
+    year = {2022},
+    url = {https://github.com/bentrueman/compare-cct},
+  }
