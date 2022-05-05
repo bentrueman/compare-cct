@@ -1,5 +1,5 @@
 
-# prior predictive checks (model is loaded from CSVs by default):
+# prior predictive checks (models are loaded from CSVs by default):
 
 #------------------ setup ------------------
 
