@@ -23,7 +23,7 @@ chlorine <- readr::read_csv(here::here("data-clean/chlorine-timeline.csv"))
 wq <- readr::read_csv(here::here("data-clean/wq-summary.csv"))
 ```
 
-This document contains 5 figures, 4 tables, and 10 pages.
+This document contains 8 figures, 4 tables, and 12 pages.
 
 ```{r table-s1}
 
@@ -75,7 +75,7 @@ knitr::include_graphics(here::here("Rmarkdown/figures/figure-s3.png"))
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-s4.png"))
 ```
 
-```{r figure-s5, fig.cap="**Figure S5.** In the model fitted to simulated data, **(a)** Seasonal component of the trend in dissolved lead. **(b)** Global multiyear component of the trend in dissolved and particulate lead. **(c)** Group-level (i.e., pipe-specific) multiyear trends in dissolved and particulate lead, representing the deviations of each time series from the global multiyear trend. In panels **(a--b)**, shaded regions span the middle 95% of the posterior distribution, and 200 draws from that posterior are superimposed in blue. All plots are shown on the transformed scale and centered."}
+```{r figure-s5, fig.cap="**Figure S5.** In the model fitted to simulated data, **(a)** seasonal component of the trend in dissolved lead. **(b)** Global multiyear component of the trend in dissolved and particulate lead. **(c)** Group-level (i.e., pipe-specific) multiyear trends in dissolved and particulate lead, representing the deviations of each time series from the global multiyear trend. In panels **(a--b)**, shaded regions span the middle 95% of the posterior distribution, and 200 draws from that posterior are superimposed in blue. All plots are shown on the transformed scale and centered."}
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-s5.png"))
 ```
 
