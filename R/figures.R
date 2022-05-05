@@ -6,8 +6,8 @@
 source("R/models.R", echo = TRUE)
 library("forcats")
 library("ggplot2")
-library("dplyr") 
-library("tidyr") 
+library("dplyr")
+library("tidyr")
 library("purrr")
 library("patchwork")
 library("readr")
@@ -48,26 +48,26 @@ annotations <- tibble::tribble(
   "2020-03-01", 0.1, "3. Autocorrelation\n(clustering of similar\nvalues in time)",
   "2018-04-01", .7, "4. Irregular sampling\nfrequency",
   "2021-06-01", .5, "5. Extreme\nvalues",
-) %>% 
+) %>%
   mutate(date = as.Date(date))
 
-fig1 <- model_in %>% 
-  filter(location == "LP31") %>% 
-  pivot_longer(c(lead_part, lead_dissolved), names_to = "type") %>% 
-  ggplot(aes(date, value)) + 
-  geom_line(aes(col = type)) + 
+fig1 <- model_in %>%
+  filter(location == "LP31") %>%
+  pivot_longer(c(lead_part, lead_dissolved), names_to = "type") %>%
+  ggplot(aes(date, value)) +
+  geom_line(aes(col = type)) +
   geom_rug(sides = "t", color = "grey", length = unit(.02, "npc")) +
   geom_label(
     data = annotations,
     aes(label = label),
-    alpha = .8, label.r = unit(0, "cm"), 
+    alpha = .8, label.r = unit(0, "cm"),
     label.size = 0,
     size = 2
   ) +
   scale_y_log10(
     limits = c(1e-4, 2),
     labels = function(breaks) 1e3 * breaks
-  ) + 
+  ) +
   scale_color_manual(
     values = palette[c(5, 1)],
     labels = c("<0.45 µm", ">0.45 µm")
@@ -336,42 +336,42 @@ calc_spag_smooths <- function(model_diss, model_part) {
   expand_grid(
     model = list(model_diss, model_part),
     smooth_term = c(
-      "s(date_numeric)", 
-      "s(date_yday,bs=\"cc\")", 
+      "s(date_numeric)",
+      "s(date_yday,bs=\"cc\")",
       "s(date_numeric,by=location,m=1)"
     )
-  ) %>% 
-    mutate(resp = map(model, ~ attributes(.x$fit)$model_name)) %>% 
-    unnest(resp) %>% 
-    filter(!str_detect(resp, "_part$") | !smooth_term == "s(date_yday,bs=\"cc\")") %>% 
+  ) %>%
+    mutate(resp = map(model, ~ attributes(.x$fit)$model_name)) %>%
+    unnest(resp) %>%
+    filter(!str_detect(resp, "_part$") | !smooth_term == "s(date_yday,bs=\"cc\")") %>%
     mutate(
       type = if_else(str_detect(resp, "_diss$"), "<0.45 µm", ">0.45 µm"),
       smooth = map2(
         model, smooth_term,
         ~ posterior_smooths(
-          .x, 
+          .x,
           smooth = .y,
           draw_ids = withr::with_seed(2149, {sample(1:4000, n_smooths)})
-        ) %>% 
-          as_tibble(rownames = ".draw") %>% 
+        ) %>%
+          as_tibble(rownames = ".draw") %>%
           pivot_longer(-.draw, names_to = ".row"),
         .id = "smooth"
       )
-    ) %>% 
+    ) %>%
     select(-model)
 }
 
 smooth_terms_spag <- calc_spag_smooths(model_diss, model_part)
 
 plot_fig4 <- function(smooth_terms_diss, smooth_terms_part, smooth_terms_spag) {
-  
+
   fig4a <- smooth_terms_diss[["mu: s(date_yday,bs=\"cc\")"]] %>%
     ggplot(aes(52 * date_yday)) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = .5) +
     geom_line(
       data = smooth_terms_spag %>%
         filter(smooth_term == "s(date_yday,bs=\"cc\")", str_detect(resp, "_diss$")) %>%
-        unnest(smooth) %>% 
+        unnest(smooth) %>%
         mutate(date_yday = rep(model_in$date_yday, n_smooths)) %>%
         distinct(smooth_term, .draw, date_yday, value),
       aes(y = value, group = .draw),
@@ -383,16 +383,16 @@ plot_fig4 <- function(smooth_terms_diss, smooth_terms_part, smooth_terms_spag) {
   fig4b <- list(
     ">0.45 µm" = smooth_terms_part[["mu: s(date_numeric)"]],
     "<0.45 µm" = smooth_terms_diss[["mu: s(date_numeric)"]]
-  ) %>% 
-    bind_rows(.id = "type") %>% 
-    mutate(date_numeric = date_numeric + 2017) %>% 
+  ) %>%
+    bind_rows(.id = "type") %>%
+    mutate(date_numeric = date_numeric + 2017) %>%
     ggplot(aes(date_numeric)) +
     facet_wrap(vars(type), ncol = 2) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = .5) +
     geom_line(
       data = smooth_terms_spag %>%
         filter(smooth_term == "s(date_numeric)") %>%
-        unnest(smooth) %>% 
+        unnest(smooth) %>%
         mutate(date_numeric = rep(model_in$date_numeric, 2 * n_smooths) + 2017),
       aes(y = value, group = .draw),
       col = palette[2], size = .05
@@ -403,9 +403,9 @@ plot_fig4 <- function(smooth_terms_diss, smooth_terms_part, smooth_terms_spag) {
   fig4c <- list(
       ">0.45 µm" = smooth_terms_part[["mu: s(date_numeric,by=location,m=1)"]],
       "<0.45 µm" = smooth_terms_diss[["mu: s(date_numeric,by=location,m=1)"]]
-    ) %>% 
-    bind_rows(.id = "type") %>% 
-    mutate(date_numeric = date_numeric + 2017) %>% 
+    ) %>%
+    bind_rows(.id = "type") %>%
+    mutate(date_numeric = date_numeric + 2017) %>%
     left_join(locations, by = "location") %>%
     ggplot(aes(date_numeric, col = ortho_dose)) +
     facet_grid(rows = vars(type), cols = vars(pipe_material), scales = "free_y") +
@@ -442,45 +442,45 @@ ggsave("Rmarkdown/figures/figure-4.png", fig4, width = 7.5, height = 4.75, dpi =
 
 drawids <- 3429
 
-pp_part <- withr::with_seed(214, 
+pp_part <- withr::with_seed(214,
   {add_pred_draws_car1(model_in, model_part,  draw_ids = drawids, type = "prediction")}
-) %>% 
+) %>%
   impute_censored(model_in, "scaled_lead_part", "cens_lead_part", ".prediction")
 
 pp_diss <- withr::with_seed(
-  214, 
+  214,
   {add_pred_draws_car1(model_in, model_diss, draw_ids = drawids, type = "prediction")}
 ) %>%
   impute_censored(model_in, "scaled_lead_dissolved", "cens_lead_dissolved", ".prediction")
 
-model_part_resid <- pp_part %>% 
+model_part_resid <- pp_part %>%
   add_resid_draws_car1(
     model_part, scaled_lead_part,
     draw_ids = (1:4000)[-drawids]
   )
 
-model_diss_resid <- pp_diss %>% 
+model_diss_resid <- pp_diss %>%
   add_resid_draws_car1(
     model_diss, scaled_lead_dissolved,
     draw_ids = (1:4000)[-drawids]
   )
 
-model_part_resid_noar <- pp_part %>% 
+model_part_resid_noar <- pp_part %>%
   add_resid_draws_car1(
     model_part, scaled_lead_part,
     draw_ids = (1:4000)[-drawids], car1 = FALSE
   )
 
-model_diss_resid_noar <- pp_diss %>% 
+model_diss_resid_noar <- pp_diss %>%
   add_resid_draws_car1(
     model_diss, scaled_lead_dissolved,
     draw_ids = (1:4000)[-drawids], car1 = FALSE
   )
 
-acf_part_resid <- calc_acf(model_part_resid, gr_vars = c(".draw", "location")) 
-acf_diss_resid <- calc_acf(model_diss_resid, gr_vars = c(".draw", "location")) 
-acf_part_resid_noar <- calc_acf(model_part_resid_noar, gr_vars = c(".draw", "location")) 
-acf_diss_resid_noar <- calc_acf(model_diss_resid_noar, gr_vars = c(".draw", "location")) 
+acf_part_resid <- calc_acf(model_part_resid, gr_vars = c(".draw", "location"))
+acf_diss_resid <- calc_acf(model_diss_resid, gr_vars = c(".draw", "location"))
+acf_part_resid_noar <- calc_acf(model_part_resid_noar, gr_vars = c(".draw", "location"))
+acf_diss_resid_noar <- calc_acf(model_diss_resid_noar, gr_vars = c(".draw", "location"))
 
 p1 <- bind_rows(
   "CAR(1)_>0.45 µm" = acf_part_resid,
@@ -489,30 +489,30 @@ p1 <- bind_rows(
   "Independent_<0.45 µm" = acf_diss_resid_noar,
   .id = "model"
 ) %>%
-  separate(model, c("model", "fraction"), sep = "_") %>% 
+  separate(model, c("model", "fraction"), sep = "_") %>%
   ggplot(aes(cor, model, fill = fraction)) +
   ggdist::stat_halfeye(slab_alpha = .5, position = "dodge", point_size = 1) +
   scale_fill_manual(values = palette[c(1,3)]) +
   scale_y_discrete(expand = expansion(add = c(0, .75))) +
   guides(fill = guide_legend(override.aes = list(shape = NA))) +
-  labs(y = NULL, x = "Rank correlation", col = NULL, fill = NULL) + 
+  labs(y = NULL, x = "Rank correlation", col = NULL, fill = NULL) +
   theme(plot.margin = unit(c(5.5, 6.5, 5.5, 5.5), "points"))
 
 # residuals:
 
-dparams <- list("<0.45 µm" = model_diss, ">0.45 µm" = model_part) %>% 
+dparams <- list("<0.45 µm" = model_diss, ">0.45 µm" = model_part) %>%
   map_dfr(
     ~ as_draws_df(.x, c("nu", "sigma")) %>%
       posterior::summarize_draws(),
     .id = "type"
-  ) %>% 
+  ) %>%
   pivot_wider(id_cols = type, names_from = variable, values_from = median)
 
-resids_diss <- model_diss_resid %>% 
+resids_diss <- model_diss_resid %>%
   group_by(across(matches(names(model_in)))) %>%
   summarize_preds(retrans = FALSE, pred_var = ".residual")
 
-resids_part <- model_part_resid %>% 
+resids_part <- model_part_resid %>%
   group_by(across(matches(names(model_in)))) %>%
   summarize_preds(retrans = FALSE, pred_var = ".residual")
 
@@ -522,27 +522,27 @@ resids <- bind_rows(
   .id = "type"
 )
 
-p2 <- resids %>% 
-  left_join(dparams) %>% 
-  group_by(type) %>% 
+p2 <- resids %>%
+  left_join(dparams) %>%
+  group_by(type) %>%
   mutate(
     density = dstudent_t(.residual, nu, sigma = sigma),
     density = density / max(density),
-  ) %>% 
-  ungroup() %>% 
+  ) %>%
+  ungroup() %>%
   ggplot(aes(x = .residual)) +
   facet_wrap(vars(type), scales = "free_x") +
   geom_histogram(
-    aes(y = ..ncount..), 
+    aes(y = ..ncount..),
     binwidth = .05
-  ) + 
+  ) +
   geom_vline(xintercept = 0, col = "white", size = .3) +
   geom_line(aes(y = density, col = "Theoretical density"), size = .3) +
   scale_color_manual(values = palette[5]) +
   labs(x = "Median residual", y = "Normalized\ncounts/density", col = NULL)
 
 p3 <- pk_vals %>%
-  pivot_longer(starts_with("pk_vals")) %>% 
+  pivot_longer(starts_with("pk_vals")) %>%
   mutate(
     name = fct_recode(name, "<0.45 µm" = "pk_vals_diss", ">0.45 µm" = "pk_vals_part")
   ) %>%
@@ -562,12 +562,12 @@ p3 <- pk_vals %>%
 
 draws_pars <- list(">0.45 µm" = model_part, "<0.45 µm" = model_diss) %>%
   map_dfr(
-    ~ .x %>% 
+    ~ .x %>%
       as_draws_df(variable = "ar[1]") %>%
-      as_tibble() %>% 
+      as_tibble() %>%
       pivot_longer(-starts_with(".")),
     .id = "model"
-  ) %>% 
+  ) %>%
   mutate(
     value = if_else(model == "<0.45 µm" & str_detect(name, "sigma"), exp(value), value)
   )
@@ -585,7 +585,7 @@ p4 <- draws_pars %>%
   labs(x = "Estimate", y = NULL, fill = NULL, col = NULL)
 
 fig5 <- patchwork::wrap_plots(
-  p2, p1, p4, p3, 
+  p2, p1, p4, p3,
   design = "AB\nCD"
 ) +
   patchwork::plot_annotation(tag_level = "a") &
@@ -644,27 +644,27 @@ preds_part_sum <- preds_part %>%
   summarize_preds(y_var = model_in$lead_part, recensor = TRUE)
 
 plot_fig6 <- function(preds_diss_sum, preds_part_sum) {
-  
+
   bind_rows(
-    "<0.45 µm" = preds_diss_sum %>% 
+    "<0.45 µm" = preds_diss_sum %>%
       pivot_longer(c(lead_dissolved, .epred_retrans)),
-    ">0.45 µm" = preds_part_sum %>% 
+    ">0.45 µm" = preds_part_sum %>%
       pivot_longer(c(lead_part, .epred_retrans)),
     .id = "type"
-  ) %>% 
-    unite(name, c(name, type)) %>% 
+  ) %>%
+    unite(name, c(name, type)) %>%
     mutate(
       name = fct_relevel(name,
         c(".epred_retrans_>0.45 µm", ".epred_retrans_<0.45 µm"),
         after = Inf
       ),
       ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")
-    ) %>% 
+    ) %>%
     assertr::verify(value > 0) %>%
     assertr::verify(.lower_retrans > 0) %>%
     assertr::verify(.upper_retrans > 0) %>%
-    ggplot(aes(date, col = name, fill = name)) + 
-    facet_grid(rows = vars(pipe_material), cols = vars(ortho_dose)) + 
+    ggplot(aes(date, col = name, fill = name)) +
+    facet_grid(rows = vars(pipe_material), cols = vars(ortho_dose)) +
     geom_rect(
       data = tibble(
         xmin = as.Date(c("2019-10-01", "2020-02-25")),
@@ -702,7 +702,7 @@ plot_fig6 <- function(preds_diss_sum, preds_part_sum) {
     ) +
     geom_ribbon(
       data = function(x) {
-        x %>% 
+        x %>%
           filter(str_detect(name, "^.epred"))
       },
       aes(ymin = .lower_retrans, ymax = .upper_retrans),
@@ -714,7 +714,7 @@ plot_fig6 <- function(preds_diss_sum, preds_part_sum) {
     scale_color_manual(
       values = c("black", "grey", palette[c(1,5)]),
       labels = c("<0.45 µm", ">0.45 µm", "GAM (>0.45 µm)", "GAM (<0.45 µm)")
-    ) + 
+    ) +
     scale_fill_manual(values = c(palette[c(5,1)], "black", "grey")) +
     geom_rug(
       data = function(x) x %>% filter(value > 1.9),
@@ -740,10 +740,10 @@ ggsave("Rmarkdown/figures/figure-6.png", fig6, width = 7, height = 4, dpi = 600)
 #------------------ figure 7 ------------------
 
 preds_d <- bind_rows(
-  "<0.45 µm" = preds_diss %>% 
+  "<0.45 µm" = preds_diss %>%
     ungroup() %>%
     mutate(.epred = retrans(.epred, model_in$lead_dissolved)),
-  ">0.45 µm" = preds_part %>% 
+  ">0.45 µm" = preds_part %>%
     ungroup() %>%
     mutate(.epred = retrans(.epred, model_in$lead_part)),
   .id = "type"
@@ -776,8 +776,8 @@ lines_d <- preds_d %>%
   distinct(difference, x, pipe_material) %>%
   mutate(
     label = if_else(
-      x == "2019-01-29", 
-      "P introduced:<br>0-0.5 mg P L<sup>-1</sup>", 
+      x == "2019-01-29",
+      "P introduced:<br>0-0.5 mg P L<sup>-1</sup>",
       "P decreased:<br>2-0.75 mg P L<sup>-1</sup>"
     ),
     xlab = if_else(
@@ -902,10 +902,10 @@ grid_2 <- grid_1 %>%
 grid_avg <- (grid_1 + grid_2) / 2
 
 smooths <- tibble(
-  grid = list(grid_1, grid_2), 
+  grid = list(grid_1, grid_2),
   model = list(model_diss, model_part)
 ) %>%
-  cross_df() %>% 
+  cross_df() %>%
   mutate(
     smooth = map2(
       model, grid,
@@ -972,7 +972,7 @@ fig8a <- list(
           values_from = c(y, ymin, ymax)
         ) %>%
         arrange(resp, date_numeric) %>%
-        # smooths and derivatives are evaluated at slightly different points, 
+        # smooths and derivatives are evaluated at slightly different points,
         # so do linear interpolation
         mutate(
           across(starts_with("y"), imputeTS::na_interpolation),
@@ -990,14 +990,14 @@ fig8a <- list(
   # generates a missing value by design:
   geom_hline(
     data = function(x) {
-      x %>% 
-        distinct(type) %>% 
+      x %>%
+        distinct(type) %>%
         mutate(int = c(NA, 0))
     },
     aes(yintercept = int),
     col = "grey"
   ) +
-  labs(x = NULL, y = "Effect (transformed scale)") + 
+  labs(x = NULL, y = "Effect (transformed scale)") +
   theme(axis.text.x = element_text(angle = 35, hjust = 1))
 
 fig8b_in <- pdat %>%
@@ -1077,14 +1077,14 @@ fig8b <- fig8b_in %>%
     aes(ymin = lower__, ymax = upper__), alpha = .5
   ) +
   geom_line(
-    data = smooth_terms_spag %>% 
-      filter(smooth_term == "s(date_yday,bs=\"cc\")") %>% 
-      unnest(smooth) %>% 
+    data = smooth_terms_spag %>%
+      filter(smooth_term == "s(date_yday,bs=\"cc\")") %>%
+      unnest(smooth) %>%
       mutate(
         yday = 365 * rep(model_in$date_yday, n_smooths),
         param = "GAM (seasonal component)",
         m_d = as.Date(glue::glue("2022-{pmax(yday, 1)}"), "%Y-%j")
-      ) %>% 
+      ) %>%
       distinct(smooth_term, .draw, yday, value, param, m_d),
     aes(y = value, group = .draw),
     col = palette[2], size = .05
@@ -1145,12 +1145,12 @@ annotations_short <- tibble::tribble(
   "2019-03-01",        "Pb #2", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>", Inf, "2.0-0.75 mg P L<sup>-1</sup>"
   )
 
-lines_short <- lines %>% 
-  distinct(ortho_dose, x) %>% 
+lines_short <- lines %>%
+  distinct(ortho_dose, x) %>%
   filter(x < "2020-01-01")
 
-preds_fdiss <- preds_diss %>% 
-  ungroup() %>% 
+preds_fdiss <- preds_diss %>%
+  ungroup() %>%
   mutate(
     .epred_retrans = retrans(.epred, model_in$lead_dissolved),
     lead_part_retrans = retrans(preds_part$.epred, model_in$lead_part),
@@ -1158,19 +1158,19 @@ preds_fdiss <- preds_diss %>%
     fdiss = lead_part_retrans / lead_total
   )
 
-preds_fdiss_summ <- preds_fdiss %>% 
-  group_by(across(group_vars(preds_diss))) %>% 
+preds_fdiss_summ <- preds_fdiss %>%
+  group_by(across(group_vars(preds_diss))) %>%
   summarize_preds(retrans = FALSE, pred_var = "fdiss")
 
 fig9 <- preds_fdiss_summ %>%
-  mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>% 
-  ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) + 
+  mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>%
+  ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) +
   facet_wrap(vars(pipe_material)) +
   geom_vline(
     data = lines_short,
     aes(xintercept = x, col = ortho_dose),
     linetype = 3, show.legend = FALSE
-  ) + 
+  ) +
   ggtext::geom_richtext(
     data = annotations_short,
     aes(x = as.Date(x), y = y, label = labels, col = ortho_dose),
@@ -1180,15 +1180,15 @@ fig9 <- preds_fdiss_summ %>%
     label.r = unit(0, "cm")
   ) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5, col = NA) +
-  geom_line() + 
+  geom_line() +
   scale_fill_manual(values = palette[c(1,3,5)]) +
-  scale_color_manual(values = palette[c(1,3,5)]) + 
+  scale_color_manual(values = palette[c(1,3,5)]) +
   labs(
-    x = NULL, 
-    col = expression("mg P L"^-1), 
+    x = NULL,
+    col = expression("mg P L"^-1),
     fill = expression("mg P L"^-1),
     y = expression(frac("[Pb]"[">0.45 µm"], "[Pb]"[total]))
-  ) + 
+  ) +
   theme(legend.text = ggtext::element_markdown())
 
 ggsave("Rmarkdown/figures/figure-9.png", fig9, width = 7.5, height = 2.25, dpi = 600)
@@ -1196,15 +1196,15 @@ ggsave("Rmarkdown/figures/figure-9.png", fig9, width = 7.5, height = 2.25, dpi =
 #------------------ figure s2 ------------------
 
 params <- c(
-  "ar[1]" = "&phi;", 
-  "sds_sdate_yday_1" = "&sigma;<sub>seasonal spline</sub>", 
+  "ar[1]" = "&phi;",
+  "sds_sdate_yday_1" = "&sigma;<sub>seasonal spline</sub>",
   "nu" = "&nu;"
 )
 
 compare_priors <- crossing(
   name = names(params),
   model = c("brms default", "This paper")
-) %>% 
+) %>%
   mutate(
     prior = c(
       "flat", "N(0.5,0.25)", # ar[1]
@@ -1218,16 +1218,16 @@ fig_s2_in <- list(
   "This paper_<0.45 µm" = as_draws_df(model_diss, names(params)),
   "brms default_>0.45 µm" = as_draws_df(model_noprior_part, names(params)[-2]),
   "This paper_>0.45 µm" = as_draws_df(model_part, names(params)[-2])
-) %>% 
-  map_dfr(as_tibble, .id = "model") %>% 
-  separate(model, c("model", "fraction"), sep = "_") %>% 
-  pivot_longer(-c(model, fraction, starts_with("."))) %>% 
+) %>%
+  map_dfr(as_tibble, .id = "model") %>%
+  separate(model, c("model", "fraction"), sep = "_") %>%
+  pivot_longer(-c(model, fraction, starts_with("."))) %>%
   # add priors:
-  left_join(compare_priors) %>% 
+  left_join(compare_priors) %>%
   filter(!is.na(value)) # removes seasonal term from part model
 
 fig_s2 <- fig_s2_in %>%
-  ggplot(aes(value, model)) + 
+  ggplot(aes(value, model)) +
   facet_grid(
     cols = vars(name),
     rows = vars(fraction),
@@ -1236,15 +1236,15 @@ fig_s2 <- fig_s2_in %>%
   ) +
   ggtext::geom_richtext(
     data = function(x) {
-      x %>% 
-        group_by(model, name, fraction, prior) %>% 
+      x %>%
+        group_by(model, name, fraction, prior) %>%
         summarize(value = median(value))
     },
-    aes(label = prior), nudge_y = -.2, 
+    aes(label = prior), nudge_y = -.2,
     label.size = 0, size = 3
   ) +
-  ggdist::stat_halfeye(normalize = "panels", scale = .6) + 
-  theme(strip.text = ggtext::element_markdown()) + 
+  ggdist::stat_halfeye(normalize = "panels", scale = .6) +
+  theme(strip.text = ggtext::element_markdown()) +
   scale_x_continuous(expand = expansion(c(.2, .2))) +
   scale_y_discrete(expand = expansion(c(.5, 0))) +
   labs(x = NULL, y = NULL)
@@ -1309,7 +1309,7 @@ panel_fun <- function(model_summ) {
 patchwork_fun <- function(panels, model_summ) {
   p1 <- plot_fun(panels[[1]]) + # penalized GAM coefficients
     theme(axis.ticks.y = element_blank())
-  p2 <- plot_fun(panels[[3]]) 
+  p2 <- plot_fun(panels[[3]])
   p3 <- plot_fun(panels[[4]], ortho_dose) + # rand intercepts
     facet_wrap(vars(pipe_material)) +
     scale_x_continuous(n.breaks = 4) +
@@ -1395,17 +1395,17 @@ ggsave("Rmarkdown/figures/figure-s7.png", fig_s7, width = 7.5, height = 7, dpi =
 #------------------ figure s8 ------------------
 
 fig_s8 <- resids %>%
-  mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>% 
+  mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>%
   ggplot(aes(date, .residual, col = type)) +
   facet_grid(
     cols = vars(ortho_dose),
     rows = vars(pipe_material)
   ) +
   geom_errorbar(aes(ymin = .lower, ymax = .upper), width = 0, size = .1) +
-  geom_point(size = .2) + 
+  geom_point(size = .2) +
   scale_color_manual(values = palette[c(1,5)]) +
   theme(
-    strip.text.x = ggtext::element_markdown(), 
+    strip.text.x = ggtext::element_markdown(),
     axis.text.x = element_text(angle = 30, hjust = 1)
   ) +
   labs(x = NULL, y = "Simulated residual (transformed scale)", col = NULL)
@@ -1415,50 +1415,3 @@ ggsave("Rmarkdown/figures/figure-s8.png", fig_s8, width = 7, height = 4.5, dpi =
 #------------------ session info ------------------
 
 writeLines(capture.output(devtools::session_info()), "session-info.txt")
-
-#------------------ extras ------------------
-
-# 1. compare pointwise standard deviations of models fitted with and without an AR term 
-# (excluding autocorrelation):
-
-# f1 <- fitted(model, model_in, incl_autocor = FALSE)
-# f2 <- fitted(model_noar, model_in, incl_autocor = FALSE)
-# 
-# list(
-#   "car1" = f1, 
-#   "noar" = f2
-# ) %>% 
-#   map(as_tibble) %>% 
-#   map(tibble::rowid_to_column) %>% 
-#   bind_rows(.id = "model") %>% 
-#   pivot_wider(names_from = model, values_from = -c(rowid, model)) %>% 
-#   summarize(
-#     # 99% percent of CAR1 SDs are greater:
-#     p_greater = 1e2 * mean(Est.Error_car1 > Est.Error_noar),
-#     # Median ratio is 1.85:
-#     r = median(Est.Error_car1 / Est.Error_noar)
-#   )
-# 
-# # compare individual smooth terms:
-# 
-# smooth_terms_noar <- conditional_smooths(model_noar)
-# 
-# compare_smooths <- function(i) {
-#   list(
-#     "car1" = smooth_terms[[i]], 
-#     "noar" = smooth_terms_noar[[i]]
-#   ) %>% 
-#     map(as_tibble) %>% 
-#     map(tibble::rowid_to_column) %>% 
-#     bind_rows(.id = "model") %>% 
-#     pivot_wider(names_from = model, values_from = -c(rowid, model)) %>% 
-#     summarize(
-#       p_greater = 1e2 * mean(se___car1 > se___noar),
-#       r = median(se___car1 / se___noar)
-#     )
-# }
-# 
-# map(1:3, compare_smooths) %>% 
-#   set_names(names(smooth_terms))
-# 
-
