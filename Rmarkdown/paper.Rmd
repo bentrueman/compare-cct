@@ -1,7 +1,7 @@
 ---
 title: "Comparing corrosion control treatments using a robust Bayesian generalized additive model"
-author: "Benjamin F. Trueman^§^, Wendell James^†^, Trevor Shu^†^, Evelyne Dor&eacute;^§^, and Graham A. Gagnon^§^"
-date: "^§^Centre for Water Resources Studies, Department of Civil & Resource Engineering, Dalhousie University, 1360 Barrington St., Halifax, NS, CAN B3H 4R2    \n&nbsp;    \n&nbsp;^†^EPCOR Water Services, Edmonton, AB, CAN"
+author: "Benjamin F. Trueman^§,\\*^, Wendell James^†^, Trevor Shu^†^, Evelyne Dor&eacute;^§^, and Graham A. Gagnon^§^"
+date: "^§^Centre for Water Resources Studies, Department of Civil & Resource Engineering, Dalhousie University, 1360 Barrington St., Halifax, NS, CAN B3H 4R2    \n&nbsp;    \n&nbsp;^†^EPCOR Water Services, Edmonton, AB, CAN    \n&nbsp;    \n&nbsp;^\\*^Corresponding author: benjamin.trueman@dal.ca"
 output:
   word_document:
     keep_md: no
