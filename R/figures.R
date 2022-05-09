@@ -13,7 +13,6 @@ library("patchwork")
 library("readr")
 library("posterior")
 library("withr", include.only = "with_seed")
-library("imputeTS", include.only = "na_interpolation")
 library("ggdist", include.only = c("stat_halfeye", "median_qi"))
 library("glue", include.only = "glue")
 library("assertr", include.only = "verify")
@@ -901,97 +900,67 @@ grid_2 <- grid_1 %>%
 
 grid_avg <- (grid_1 + grid_2) / 2
 
-smooths <- tibble(
-  grid = list(grid_1, grid_2),
-  model = list(model_diss, model_part)
+slopes <- list(
+  "<0.45 µm" = model_diss,
+  ">0.45 µm" = model_part
 ) %>%
-  cross_df() %>%
-  mutate(
-    smooth = map2(
-      model, grid,
-      ~ posterior_smooths(.x, smooth = "s(date_numeric)", .y)
-    ),
-    start = map(grid, ~ pull(.x)[1]),
-    resp = map(model, ~ attributes(.x$fit)$model_name)
+  map_dfr(
+    ~ local_slope(grid_avg, .x, "date_numeric", smooth = "s(date_numeric)"),
+    .id = "fraction"
   ) %>%
-  unnest(c(start, resp)) %>%
-  mutate(bound = if_else(start == max(start), "upper", "lower")) %>%
-  pivot_wider(-c(model, grid, start), names_from = bound, values_from = smooth) %>%
+  rename(Smooth = smooth, "Local slope" = slope) %>%
+  pivot_longer(c(Smooth, `Local slope`))
+
+slopes_sum <- slopes %>%
+  select(-.draw) %>%
+  group_by(fraction, date_numeric, name) %>%
+  summarize_preds(pred_var = "value", retrans = FALSE)
+
+slopes_sig <- slopes_sum %>%
+  pivot_wider(
+    id_cols = c(fraction, date_numeric),
+    names_from = c(name),
+    values_from = c(value, .lower, .upper)
+  ) %>%
+  arrange(fraction, date_numeric) %>%
   mutate(
-    # grids:
-    grid_1 = list(grid_1),
-    grid_avg = list(grid_avg),
-    # summary stats:
-    smooths = map(lower, ~ apply(.x, 2, ggdist::median_qi) %>% bind_rows()),
-    # derivatives and summary stats:
-    derivs = map2(lower, upper, ~ (.y - .x) / epsilon),
-    derivs_sum = map(derivs, ~ apply(.x, 2, ggdist::median_qi) %>% bind_rows()),
-    # spaghetti:
-    index = map(lower, ~ withr::with_seed(8765309, {
-      sample(seq_len(nrow(.x)), 200)
-    })),
-    smooths_spag = map2(lower, index, ~ .x[.y, ]),
-    derivs_spag = map2(derivs, index, ~ .x[.y, ]),
-    across(ends_with("_spag"), function(x) map(x, ~ as.data.frame(t(.x))))
+    value = if_else(
+      sign(`.lower_Local slope`) == sign(`.upper_Local slope`),
+      value_Smooth,
+      NA_real_
+    ),
+    name = "Smooth"
   )
 
-fig8a <- list(
-  "Smooth" = unnest(smooths, c(grid_1, smooths, smooths_spag)),
-  "Local slope" = unnest(smooths, c(grid_avg, derivs_sum, derivs_spag))
-) %>%
-  bind_rows(.id = "type") %>%
-  select(where(~ !is.list(.x))) %>%
-  mutate(
-    type = factor(type),
-    resp = fct_recode(resp, ">0.45 µm" = "model_part", "<0.45 µm" = "model_diss")
-  ) %>%
+slopes_spag <- slopes %>%
+  filter(.draw %in% withr::with_seed(8765309, {sample(max(slopes$.draw), 200)}))
+
+fig8a <- slopes_sum %>%
   ggplot(aes(date_numeric + 2017)) +
   facet_grid(
-    cols = vars(resp),
-    rows = vars(type = fct_relevel(type, "Smooth", after = 0L)),
+    rows = vars(name = fct_relevel(name, "Smooth", after = 0L)),
+    cols = vars(fraction),
     scales = "free_y"
   ) +
-  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .5) +
+  geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5) +
   geom_line(
-    data = function(x) {
-      x %>%
-        pivot_longer(starts_with("V"))
-    },
-    aes(y = value, group = name),
+    data = slopes_spag,
+    aes(y = value, group = .draw),
     size = .1, alpha = .5,
     col = palette[2]
   ) +
-  geom_line(aes(y = y), show.legend = FALSE) +
+  geom_line(aes(y = value), show.legend = FALSE) +
   # generates missing values by design:
   geom_line(
-    data = function(x) {
-      x %>%
-        pivot_wider(
-          id_cols = c(resp, date_numeric),
-          names_from = c(type),
-          values_from = c(y, ymin, ymax)
-        ) %>%
-        arrange(resp, date_numeric) %>%
-        # smooths and derivatives are evaluated at slightly different points,
-        # so do linear interpolation
-        mutate(
-          across(starts_with("y"), imputeTS::na_interpolation),
-          y = if_else(
-            sign(`ymin_Local slope`) == sign(`ymax_Local slope`),
-            y_Smooth,
-            NA_real_
-          ),
-          type = "Smooth"
-        )
-    },
-    aes(y = y), show.legend = FALSE,
+    data = slopes_sig,
+    aes(y = value), show.legend = FALSE,
     col = palette[5]
   ) +
   # generates a missing value by design:
   geom_hline(
     data = function(x) {
       x %>%
-        distinct(type) %>%
+        distinct(name) %>%
         mutate(int = c(NA, 0))
     },
     aes(yintercept = int),
