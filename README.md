@@ -6,6 +6,6 @@
 This repository contains the R code and other materials for the paper
 “Comparing corrosion control treatments using a robust Bayesian
 generalized additive model”, currently available as a
-[preprint](http://doi.org/10.26434/chemrxiv-2022-b3f72). Bespoke
+[preprint](http://doi.org/10.26434/chemrxiv-2022-b3f72-v2). Bespoke
 functions used to fit the models are available as a separate package,
 [`bgamcar1`](https://github.com/bentrueman/bgamcar1).
