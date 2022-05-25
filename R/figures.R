@@ -42,11 +42,11 @@ locations <- model_in %>%
 
 annotations <- tibble::tribble(
   ~date, ~value, ~label,
-  "2019-01-01", 0.02, "1. Non-linearity",
+  "2018-12-01", 0.01, "1. Non-linearity",
   "2020-10-01", 1e-4, "2. Left-censoring",
-  "2020-03-01", 0.1, "3. Autocorrelation\n(clustering of similar\nvalues in time)",
+  "2020-03-01", 0.04, "3. Autocorrelation\n(clustering of similar\nvalues in time)",
   "2018-04-01", .7, "4. Irregular sampling\nfrequency",
-  "2021-06-01", .5, "5. Extreme\nvalues",
+  "2021-05-01", .5, "5. Extreme\nvalues",
 ) %>%
   mutate(date = as.Date(date))
 
@@ -54,7 +54,6 @@ fig1 <- model_in %>%
   filter(location == "LP31") %>%
   pivot_longer(c(lead_part, lead_dissolved), names_to = "type") %>%
   ggplot(aes(date, value)) +
-  geom_line(aes(col = type)) +
   geom_rug(sides = "t", color = "grey", length = unit(.02, "npc")) +
   geom_label(
     data = annotations,
@@ -63,6 +62,7 @@ fig1 <- model_in %>%
     label.size = 0,
     size = 2
   ) +
+  geom_line(aes(col = type)) +
   scale_y_log10(
     limits = c(1e-4, 2),
     labels = function(breaks) 1e3 * breaks
@@ -288,7 +288,7 @@ fig3 <- gam_basis %>%
     )
   ) %>%
   ggplot(aes(date)) +
-  facet_wrap(vars(name), scales = "free_y", ncol = 2) +
+  facet_wrap(vars(name), scales = "free_y", ncol = 1) +
   geom_line(aes(y = basis_value, col = basis_name)) +
   geom_line(
     data = function(x) {
@@ -318,9 +318,10 @@ fig3 <- gam_basis %>%
     x = NULL,
     y = expression("log([Pb] (µg L"^-1 * ")"),
     col = NULL
-  )
+  ) +
+  guides(col = guide_legend(nrow = 4))
 
-ggsave("Rmarkdown/figures/figure-3.png", fig3, width = 7, height = 2.5, dpi = 600)
+ggsave("Rmarkdown/figures/figure-3.png", fig3, width = 3.33, height = 4, dpi = 600)
 
 #------------------ figure 4 ------------------
 
@@ -429,8 +430,8 @@ plot_fig4 <- function(smooth_terms_diss, smooth_terms_part, smooth_terms_spag) {
       # axis.text.x = element_text(angle = 35, hjust = 1),
       legend.position = "bottom"
     ) &
-    scale_color_manual(values = palette[c(1, 3, 5)]) &
-    scale_fill_manual(values = palette[c(1, 3, 5)])
+    scale_color_manual(values = palette[c(5,3,1)]) &
+    scale_fill_manual(values = palette[c(5,3,1)])
 }
 
 fig4 <- plot_fig4(smooth_terms_diss, smooth_terms_part, smooth_terms_spag)
@@ -484,17 +485,17 @@ acf_diss_resid_noar <- calc_acf(model_diss_resid_noar, gr_vars = c(".draw", "loc
 p1 <- bind_rows(
   "CAR(1)_>0.45 µm" = acf_part_resid,
   "CAR(1)_<0.45 µm" = acf_diss_resid,
-  "Independent_>0.45 µm" = acf_part_resid_noar,
-  "Independent_<0.45 µm" = acf_diss_resid_noar,
+  "GAM_>0.45 µm" = acf_part_resid_noar,
+  "GAM_<0.45 µm" = acf_diss_resid_noar,
   .id = "model"
 ) %>%
   separate(model, c("model", "fraction"), sep = "_") %>%
   ggplot(aes(cor, model, fill = fraction)) +
-  ggdist::stat_halfeye(slab_alpha = .5, position = "dodge", point_size = 1) +
+  ggdist::stat_halfeye(slab_alpha = .5, position = position_dodge(width = .1), point_size = 1, show.legend = FALSE) +
   scale_fill_manual(values = palette[c(1,3)]) +
   scale_y_discrete(expand = expansion(add = c(0, .75))) +
   guides(fill = guide_legend(override.aes = list(shape = NA))) +
-  labs(y = NULL, x = "Rank correlation", col = NULL, fill = NULL) +
+  labs(y = "Model", x = "Rank correlation", col = NULL, fill = NULL) +
   theme(plot.margin = unit(c(5.5, 6.5, 5.5, 5.5), "points"))
 
 # residuals:
@@ -536,8 +537,7 @@ p2 <- resids %>%
     binwidth = .05
   ) +
   geom_vline(xintercept = 0, col = "white", size = .3) +
-  geom_line(aes(y = density, col = "Theoretical density"), size = .3) +
-  scale_color_manual(values = palette[5]) +
+  geom_line(aes(y = density), col = palette[5], size = .3) +
   labs(x = "Median residual", y = "Normalized\ncounts/density", col = NULL)
 
 p3 <- pk_vals %>%
@@ -551,7 +551,7 @@ p3 <- pk_vals %>%
     linetype = 3
   ) +
   scale_color_manual(values = palette[c(1, 3)]) +
-  geom_line(size = .2) +
+  geom_line(size = .2, show.legend = FALSE) +
   theme(legend.margin = margin()) +
   labs(
     x = "Year",
@@ -575,18 +575,20 @@ p4 <- draws_pars %>%
   ggplot(aes(value, fill = model)) +
   ggdist::stat_halfeye(slab_alpha = .5) +
   scale_fill_manual(values = palette[c(1,3)]) +
-  scale_y_discrete(expand = expansion(add = c(.1, 0))) +
+  scale_y_continuous(expand = expansion(add = c(.2, 0))) +
   theme(
     strip.text = ggtext::element_markdown(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
+    axis.title.x = ggtext::element_markdown()
   ) +
-  labs(x = "Estimate", y = NULL, fill = NULL, col = NULL)
+  labs(x = "&phi;", y = "Density", fill = NULL, col = NULL)
 
 fig5 <- patchwork::wrap_plots(
   p2, p1, p4, p3,
-  design = "AB\nCD"
+  # design = "AB\nCD"
+  nrow = 4,
+  heights = c(.8,1.2,.8,.8)
 ) +
+  patchwork::plot_layout(guides = "collect") +
   patchwork::plot_annotation(tag_level = "a") &
   theme(
     plot.tag = element_text(face = "bold"),
@@ -594,7 +596,7 @@ fig5 <- patchwork::wrap_plots(
   ) &
   guides(col = guide_legend(override.aes = list(size = .5), ncol = 2))
 
-ggsave("Rmarkdown/figures/figure-5.png", fig5, width = 7.5, height = 4, dpi = 600)
+ggsave("Rmarkdown/figures/figure-5.png", fig5, width = 3.33, height = 6, dpi = 600)
 
 #------------------ figure 6 ------------------
 
@@ -605,9 +607,9 @@ annotations <- tibble::tribble(
   ~ortho_dose, ~x, ~pipe_material, ~labels,
   "0-0.5", "2018-03-15", "Pb #1", "P introduced",
   "2.0-0.75", "2018-06-01", "Pb #1", "P decreased",
-  "0-0.5", "2020-01-01", "Pb-Cu", "Section\nremoved",
-  "1.0", "2020-01-01", "Pb-Cu", "Section\nremoved",
-  "2.0-0.75", "2020-01-01", "Pb-Cu", "Section\nremoved"
+  "0-0.5", "2019-11-01", "Pb-Cu", "Section\nremoved",
+  "1.0", "2019-11-01", "Pb-Cu", "Section\nremoved",
+  "2.0-0.75", "2019-11-01", "Pb-Cu", "Section\nremoved"
 ) %>%
   mutate(
     y = Inf,
@@ -696,7 +698,7 @@ plot_fig6 <- function(preds_diss_sum, preds_part_sum) {
       aes(x = as.Date(x), y = y, label = labels),
       inherit.aes = FALSE, vjust = "inward", hjust = 0,
       label.padding = unit(0.2, "lines"), label.size = 0,
-      show.legend = FALSE, size = 2, alpha = .75,
+      show.legend = FALSE, size = 2.5, alpha = .75,
       label.r = unit(0, "cm")
     ) +
     geom_ribbon(
@@ -780,9 +782,9 @@ lines_d <- preds_d %>%
       "P decreased:<br>2-0.75 mg P L<sup>-1</sup>"
     ),
     xlab = if_else(
-      x != "2019-01-29",
-      x,
-      as.Date("2018-03-01")
+      x == "2019-01-29",
+      as.Date("2018-02-01"),
+      as.Date("2018-11-01")
     )
   )
 
@@ -796,6 +798,21 @@ ratio_plot <- function(x, ...) {
       cols = vars(type)
     ) +
     geom_hline(yintercept = 1) +
+    geom_vline(
+      data = lines_d %>%
+        filter(...),
+      aes(xintercept = x), linetype = 3
+    ) +
+    ggtext::geom_richtext(
+      data = lines_d %>%
+        filter(...) %>%
+        slice(1),
+      aes(x = xlab, y = 0, label = label),
+      inherit.aes = FALSE, vjust = "inward", hjust = 0,
+      label.padding = unit(0.2, "lines"), label.size = 0,
+      show.legend = FALSE, size = 2, alpha = .75,
+      label.r = unit(0, "cm")
+    ) +
     geom_ribbon(aes(ymin = .lower, ymax = .upper), col = NA, alpha = .5) +
     geom_line(
       data = function(x) {
@@ -818,21 +835,6 @@ ratio_plot <- function(x, ...) {
       },
       col = palette[5]
     ) +
-    geom_vline(
-      data = lines_d %>%
-        filter(...),
-      aes(xintercept = x), linetype = 3
-    ) +
-    ggtext::geom_richtext(
-      data = lines_d %>%
-        filter(...) %>%
-        slice(1),
-      aes(x = xlab, y = 0, label = label),
-      inherit.aes = FALSE, vjust = "inward", hjust = 0,
-      label.padding = unit(0.2, "lines"), label.size = 0,
-      show.legend = FALSE, size = 2, alpha = .75,
-      label.r = unit(0, "cm")
-    ) +
     labs(x = NULL, col = NULL, fill = NULL) +
     scale_y_log10() +
     theme(
@@ -854,12 +856,12 @@ p2 <- preds_d_summ %>%
   ) +
   labs(y = expression(frac("1 mg P L"^-1, "2-0.75 mg P L"^-1)))
 
-fig7 <- patchwork::wrap_plots(p1, p2) +
+fig7 <- patchwork::wrap_plots(p1, p2, nrow = 2) +
   patchwork::plot_annotation(tag_level = "a") +
   patchwork::plot_layout(guides = "collect") &
   theme(plot.tag = element_text(face = "bold"))
 
-ggsave("Rmarkdown/figures/figure-7.png", fig7, width = 7, height = 2.5, dpi = 600)
+ggsave("Rmarkdown/figures/figure-7.png", fig7, width = 3.33, height = 5, dpi = 600)
 
 # for text:
 
@@ -940,7 +942,8 @@ fig8a <- slopes_sum %>%
   facet_grid(
     rows = vars(name = fct_relevel(name, "Smooth", after = 0L)),
     cols = vars(fraction),
-    scales = "free_y"
+    scales = "free_y",
+    labeller = labeller(name = as_labeller(c("Local slope" = "Local\nslope", "Smooth" = "Trend")))
   ) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5) +
   geom_line(
@@ -966,7 +969,7 @@ fig8a <- slopes_sum %>%
     aes(yintercept = int),
     col = "grey"
   ) +
-  labs(x = NULL, y = "Effect (transformed scale)") +
+  labs(x = NULL, y = "Effect") +
   theme(axis.text.x = element_text(angle = 35, hjust = 1))
 
 fig8b_in <- pdat %>%
@@ -1085,13 +1088,13 @@ fig8c <- pdat %>%
   scale_color_manual(values = palette[c(5,3,1)]) +
   theme(
     legend.margin = margin(),
-    legend.background = element_rect(fill = alpha("white", .5)),
+    # legend.background = element_rect(fill = alpha("white", .5)),
     strip.text = ggtext::element_markdown(),
-    legend.position = c(.5, .15),
-    legend.direction = "horizontal"
+    # legend.position = c(.5, .15),
+    # legend.direction = "horizontal"
   ) +
-  guides(col = guide_legend(nrow = 2)) +
-  ylim(c(0, 27)) +
+  # guides(col = guide_legend(nrow = 2)) +
+  # ylim(c(0, 27)) +
   labs(
     x = NULL,
     y = NULL,
@@ -1099,24 +1102,26 @@ fig8c <- pdat %>%
   )
 
 fig8 <- patchwork::wrap_plots(
-  fig8a, fig8b, fig8c
+  fig8a, fig8b, fig8c,
+  nrow = 3, heights = c(.8, 1.2, .5)
 ) +
   patchwork::plot_annotation(tag_level = "a") &
   theme(plot.tag = element_text(face = "bold"))
 
-ggsave("Rmarkdown/figures/figure-8.png", fig8, width = 7.6, height = 2.8, dpi = 600)
+ggsave("Rmarkdown/figures/figure-8.png", fig8, width = 3.33, height = 6, dpi = 600)
 
 #------------------ figure 9 ------------------
 
 annotations_short <- tibble::tribble(
-            ~x, ~pipe_material,                                      ~labels, ~y,                    ~ortho_dose,
-  "2018-01-01",        "Pb #1", "P introduced:<br>0-0.5 mg P L<sup>-1</sup>", Inf,    "0-0.5 mg P L<sup>-1</sup>",
-  "2019-03-01",        "Pb #2", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>", Inf, "2.0-0.75 mg P L<sup>-1</sup>"
+            ~x, ~pipe_material,                                      ~labels, ~y, ~ortho_dose,
+  "2018-01-01",        "Pb #1", "P introduced:<br>0-0.5 mg P L<sup>-1</sup>", Inf,    "0-0.5",
+  "2019-03-01",        "Pb #2", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>", Inf, "2.0-0.75"
   )
 
 lines_short <- lines %>%
   distinct(ortho_dose, x) %>%
-  filter(x < "2020-01-01")
+  filter(x < "2020-01-01") %>%
+  mutate(ortho_dose = str_remove(ortho_dose, " mg P L<sup>-1</sup>"))
 
 preds_fdiss <- preds_diss %>%
   ungroup() %>%
@@ -1132,9 +1137,22 @@ preds_fdiss_summ <- preds_fdiss %>%
   summarize_preds(retrans = FALSE, pred_var = "fdiss")
 
 fig9 <- preds_fdiss_summ %>%
-  mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>%
+  # mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>%
   ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) +
-  facet_wrap(vars(pipe_material)) +
+  facet_wrap(vars(pipe_material), ncol = 1) +
+  geom_rect(
+    data = function(x) {
+      x %>%
+        group_by(pipe_material, ortho_dose) %>%
+        summarize(xmin = min(date)) %>%
+        mutate(
+          xmax = as.Date("2018-03-13"),
+          ymin = 0, ymax = Inf
+        )
+    },
+    aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    inherit.aes = FALSE, alpha = .2
+  ) +
   geom_vline(
     data = lines_short,
     aes(xintercept = x, col = ortho_dose),
@@ -1145,22 +1163,24 @@ fig9 <- preds_fdiss_summ %>%
     aes(x = as.Date(x), y = y, label = labels, col = ortho_dose),
     inherit.aes = FALSE, vjust = "inward", hjust = 0,
     label.padding = unit(0.2, "lines"), label.size = 0,
-    show.legend = FALSE, size = 2, alpha = .75,
+    show.legend = FALSE, size = 2.5, fill = alpha("white", 0.75),
     label.r = unit(0, "cm")
   ) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5, col = NA) +
   geom_line() +
-  scale_fill_manual(values = palette[c(1,3,5)]) +
-  scale_color_manual(values = palette[c(1,3,5)]) +
+  scale_fill_manual(values = palette[c(5,3,1)]) +
+  scale_color_manual(values = palette[c(5,3,1)]) +
   labs(
     x = NULL,
     col = expression("mg P L"^-1),
     fill = expression("mg P L"^-1),
     y = expression(frac("[Pb]"[">0.45 µm"], "[Pb]"[total]))
   ) +
-  theme(legend.text = ggtext::element_markdown())
+  theme(
+    legend.margin = margin(r = 25)
+  )
 
-ggsave("Rmarkdown/figures/figure-9.png", fig9, width = 7.5, height = 2.25, dpi = 600)
+ggsave("Rmarkdown/figures/figure-9.png", fig9, width = 3.33, height = 4.5, dpi = 600)
 
 #------------------ figure s2 ------------------
 
