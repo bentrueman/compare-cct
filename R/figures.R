@@ -427,7 +427,6 @@ plot_fig4 <- function(smooth_terms_diss, smooth_terms_part, smooth_terms_spag) {
     patchwork::plot_annotation(tag_level = "a") &
     theme(
       plot.tag = element_text(face = "bold"),
-      # axis.text.x = element_text(angle = 35, hjust = 1),
       legend.position = "bottom"
     ) &
     scale_color_manual(values = palette[c(5,3,1)]) &
@@ -584,7 +583,6 @@ p4 <- draws_pars %>%
 
 fig5 <- patchwork::wrap_plots(
   p2, p1, p4, p3,
-  # design = "AB\nCD"
   nrow = 4,
   heights = c(.8,1.2,.8,.8)
 ) +
@@ -1088,13 +1086,8 @@ fig8c <- pdat %>%
   scale_color_manual(values = palette[c(5,3,1)]) +
   theme(
     legend.margin = margin(),
-    # legend.background = element_rect(fill = alpha("white", .5)),
-    strip.text = ggtext::element_markdown(),
-    # legend.position = c(.5, .15),
-    # legend.direction = "horizontal"
-  ) +
-  # guides(col = guide_legend(nrow = 2)) +
-  # ylim(c(0, 27)) +
+    strip.text = ggtext::element_markdown()
+  ) +s
   labs(
     x = NULL,
     y = NULL,
@@ -1137,7 +1130,6 @@ preds_fdiss_summ <- preds_fdiss %>%
   summarize_preds(retrans = FALSE, pred_var = "fdiss")
 
 fig9 <- preds_fdiss_summ %>%
-  # mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>%
   ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) +
   facet_wrap(vars(pipe_material), ncol = 1) +
   geom_rect(

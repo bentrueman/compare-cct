@@ -24,7 +24,7 @@ knots_yday <- c(0, 1)
 # prior simulation:
 
 model_prior_part <- fit_stan_model(
-  "data-clean/prior_part",
+  "models/prior_part",
   seed = stan_seed,
   form_part, model_in, prior_part,
   save_warmup = FALSE,
@@ -32,7 +32,7 @@ model_prior_part <- fit_stan_model(
 )
 
 model_prior_diss <- fit_stan_model(
-  "data-clean/prior_diss",
+  "models/prior_diss",
   seed = stan_seed,
   form_diss, model_in, prior_diss,
   save_warmup = FALSE,
