@@ -24,9 +24,9 @@ fig7_summ <- readr::read_csv(here::here("data-clean/figure-7-summary.csv"))
 
 Pipe loop studies are used to evaluate corrosion control treatment, and updated regulatory guidance will ensure that they remain important for water quality management. But the data they generate are difficult to analyze: non-linear time-trends, non-detects, extreme values, and autocorrelation are common features that make popular methods, such as the *t*- or rank-sum tests, poor descriptive models. Here, we propose a model for pipe loop data that accommodates many of these difficult-to-model characteristics: a robust Bayesian generalized additive model with continuous-time autoregressive errors. Our approach facilitates corrosion control treatment comparisons without the need for imputing non-detects or special handling of outliers. It is well-suited to describing nonlinear trends without overfitting, and it accounts for the reduced information content in autocorrelated time series. We demonstrate it using a four-year pipe loop study, with multiple pipe configurations and orthophosphate dosing protocols, finding that an initially high dose of orthophosphate (2 mg P L^-1^) that is subsequently lowered (0.75 mg P L^-1^) can yield lower lead release than an intermediate dose (1 mg P L^-1^) in the long term. 
 
-```{r toc-art}
-knitr::include_graphics(here::here("Rmarkdown/figures/figure-toc.png"))
-```
+## Keywords
+
+GAM; time series analysis; censored data; pipe loop; Lead and Copper Rule 
 
 # Introduction    
 
@@ -234,11 +234,22 @@ Given that pipe loop studies are expected to remain important for drinking water
 
 # Acknowledgements  
 
-This work was supported by Mitacs, through the Mitacs Accelerate Program (Reference # IT23352), and NSERC, through an Industrial Research Chair program (Grant # IRCPJ: 349838-16) and a Postdoctoral Fellowship (E. Dor&eacute;). We thank David Redden and Paul Bjorndahl for providing comments on a draft of the manuscript. We also acknowledge EPCOR's analytical operations team for water quality analysis and their
-process development team for operating the pipe loops.
+This work was supported by Mitacs, through the Mitacs Accelerate Program (Reference # IT23352), and NSERC, through an Industrial Research Chair program (Grant # IRCPJ: 349838-16) and a Postdoctoral Fellowship (E. Dor&eacute;). We thank David Redden and Paul Bjorndahl for providing comments on a draft of the manuscript. We also acknowledge EPCOR's analytical operations team for water quality analysis and their process development team for operating the pipe loops.
 
 # Associated content  
 
-Supplementary information for this article includes additional description of the pipe loop study, a comparison of different prior choices, models summaries, and convergence statistics.
+## Supporting information
+
+The Supporting Information is available free of charge via the internet at http://pubs.acs.org.
+
+Additional description of the pipe loop study and the statistical model, including model summaries, convergence statistics, and a comparison of different prior choices.
 
 # References  
+
+<div id="refs"></div>
+
+# TOC graphic  
+
+```{r toc-art}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-toc.png"))
+```
