@@ -43,7 +43,7 @@ chlorine %>%
 
 flows %>% 
   rename_all(str_to_sentence) %>% 
-  knitr::kable(caption = "**Table S3.** Pipe array flow schedule; sampling occurred at T4, and FY-001, -002, and -003 are defined in Figure S1.")
+  knitr::kable(caption = "**Table S3.** Pipe array flow schedule; sampling occurred at T4, and FY-001, -002, and -003 are defined in Figure S1. A Modicon M221 logic controller (Schneider Electric, Canada) was used for process control. Three 2-inch ASCO 8210G100 solenoid valves (i.e., FY-001, -002 and -003) were wired to the logic controller, opening and closing according to the schedule.")
 
 ```
 

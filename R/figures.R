@@ -41,13 +41,13 @@ locations <- model_in %>%
 #------------------ figure 1 ------------------
 
 annotations <- tibble::tribble(
-  ~date, ~value, ~label,
-  "2018-12-01", 0.01, "1. Non-linearity",
-  "2020-10-01", 1e-4, "2. Left-censoring",
-  "2020-03-01", 0.04, "3. Autocorrelation\n(clustering of similar\nvalues in time)",
-  "2018-04-01", .7, "4. Irregular sampling\nfrequency",
-  "2021-05-01", .5, "5. Extreme\nvalues",
-) %>%
+         ~date, ~value,                                                        ~label,
+  "2018-12-01",   0.01,                                            "1. Non-linearity",
+  "2020-10-01",  1e-04,                                           "2. Left-censoring",
+  "2020-03-01",   0.04, "3. Autocorrelation\n(clustering of similar\nvalues in time)",
+  "2018-04-01",    0.7,                            "4. Irregular sampling\nfrequency",
+  "2021-05-01",    0.5,                                          "5. Extreme\nvalues"
+  ) %>%
   mutate(date = as.Date(date))
 
 fig1 <- model_in %>%
@@ -598,74 +598,7 @@ ggsave("Rmarkdown/figures/figure-5.png", fig5, width = 3.33, height = 6, dpi = 6
 
 #------------------ figure 6 ------------------
 
-# n.b., dates reflect label positions;
-# correct dates are used for the vertical dashed lines
-
-annotations <- tibble::tribble(
-  ~ortho_dose, ~x, ~pipe_material, ~labels,
-  # "0-0.5", "2018-03-15", "Pb #1", "P introduced",
-  # "2.0-0.75", "2018-06-01", "Pb #1", "P decreased",
-  "0-0.5", "2020-01-01", "Pb-Cu", "Section<br>removed",
-  "1.0", "2020-01-01", "Pb-Cu", "Section<br>removed",
-  "2.0-0.75", "2020-01-01", "Pb-Cu", "Section<br>removed",
-  "0-0.5", "2017-11-01", "Pb #1", "0",
-  "0-0.5", "2017-11-01", "Pb #2", "0",
-  "0-0.5", "2017-11-01", "Pb-Cu", "0",
-  "0-0.5", "2019-03-01", "Pb #1", "0.5",
-  "0-0.5", "2019-03-01", "Pb #2", "0.5",
-  "0-0.5", "2019-03-01", "Pb-Cu", "0.5",
-  "1.0", "2017-03-01", "Pb #1", "0",
-  "1.0", "2017-03-01", "Pb #2", "0",
-  "1.0", "2017-03-01", "Pb-Cu", "0",
-  "1.0", "2018-04-01", "Pb #1", "1",
-  "1.0", "2018-04-01", "Pb #2", "1",
-  "1.0", "2018-04-01", "Pb-Cu", "1",
-  "2.0-0.75", "2017-03-01", "Pb #1", "0",
-  "2.0-0.75", "2017-03-01", "Pb #2", "0",
-  "2.0-0.75", "2017-03-01", "Pb-Cu", "0",
-  "2.0-0.75", "2018-04-01", "Pb #1", "2",
-  "2.0-0.75", "2018-04-01", "Pb #2", "2",
-  "2.0-0.75", "2018-04-01", "Pb-Cu", "2",
-  "2.0-0.75", "2019-05-01", "Pb #1", "0.75",
-  "2.0-0.75", "2019-05-01", "Pb #2", "0.75",
-  "2.0-0.75", "2019-05-01", "Pb-Cu", "0.75"
-) %>%
-  mutate(
-    y = if_else(str_detect(labels, "^Section"), .1, Inf),
-    ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>"),
-    labels = if_else(
-      str_detect(labels, "^Section"),
-      labels,
-      paste0(labels, " mg P L<sup>-1</sup>")
-    )
-  )
-
-lines <- tibble::tribble(
-  ~ortho_dose, ~x, ~pipe_material,
-  # section removed:
-  "0-0.5", "2020-11-01", "Pb-Cu",
-  "1.0", "2020-11-01", "Pb-Cu",
-  "2.0-0.75", "2020-11-01", "Pb-Cu",
-  # P introduced (0.5 mg/L):
-  "0-0.5", "2019-01-29", "Pb #1",
-  "0-0.5", "2019-01-29", "Pb #2",
-  "0-0.5", "2019-01-29", "Pb-Cu",
-  # P introduced (other 2 doses):
-  "1.0", "2018-03-13", "Pb #1",
-  "1.0", "2018-03-13", "Pb #2",
-  "1.0", "2018-03-13", "Pb-Cu",
-  "2.0-0.75", "2018-03-13", "Pb #1",
-  "2.0-0.75", "2018-03-13", "Pb #2",
-  "2.0-0.75", "2018-03-13", "Pb-Cu",
-  # P decreased:
-  "2.0-0.75", "2019-04-16", "Pb #1",
-  "2.0-0.75", "2019-04-16", "Pb #2",
-  "2.0-0.75", "2019-04-16", "Pb-Cu"
-) %>%
-  mutate(
-    x = as.Date(x),
-    ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")
-  )
+# generate predictions:
 
 preds_diss <- add_pred_draws_car1(model_in, model_diss)
 preds_part <- add_pred_draws_car1(model_in, model_part)
@@ -677,6 +610,72 @@ preds_diss_sum <- preds_diss %>%
 preds_part_sum <- preds_part %>%
   select(.epred) %>%
   summarize_preds(y_var = model_in$lead_part, recensor = TRUE)
+
+# annotations:
+# n.b., dates reflect label positions;
+# correct dates are used for the vertical dashed lines
+
+annotations <- tibble::tribble(
+  ~ortho_dose,           ~x, ~pipe_material,              ~labels,
+      "0-0.5", "2019-12-01",        "Pb-Cu", "Section<br>removed",
+        "1.0", "2019-12-01",        "Pb-Cu", "Section<br>removed",
+   "2.0-0.75", "2019-12-01",        "Pb-Cu", "Section<br>removed",
+      "0-0.5", "2017-11-01",        "Pb #1",                  "0",
+      "0-0.5", "2017-11-01",        "Pb #2",                  "0",
+      "0-0.5", "2017-11-01",        "Pb-Cu",                  "0",
+      "0-0.5", "2019-03-01",        "Pb #1",                "0.5",
+      "0-0.5", "2019-03-01",        "Pb #2",                "0.5",
+      "0-0.5", "2019-03-01",        "Pb-Cu",                "0.5",
+        "1.0", "2017-03-01",        "Pb #1",                  "0",
+        "1.0", "2017-03-01",        "Pb #2",                  "0",
+        "1.0", "2017-03-01",        "Pb-Cu",                  "0",
+        "1.0", "2018-04-01",        "Pb #1",                  "1",
+        "1.0", "2018-04-01",        "Pb #2",                  "1",
+        "1.0", "2018-04-01",        "Pb-Cu",                  "1",
+   "2.0-0.75", "2017-03-01",        "Pb #1",                  "0",
+   "2.0-0.75", "2017-03-01",        "Pb #2",                  "0",
+   "2.0-0.75", "2017-03-01",        "Pb-Cu",                  "0",
+   "2.0-0.75", "2018-04-01",        "Pb #1",                  "2",
+   "2.0-0.75", "2018-04-01",        "Pb #2",                  "2",
+   "2.0-0.75", "2018-04-01",        "Pb-Cu",                  "2",
+   "2.0-0.75", "2019-05-01",        "Pb #1",               "0.75",
+   "2.0-0.75", "2019-05-01",        "Pb #2",               "0.75",
+   "2.0-0.75", "2019-05-01",        "Pb-Cu",               "0.75"
+  ) %>%
+  mutate(
+    y = if_else(str_detect(labels, "^Section"), .1, Inf),
+    ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>"),
+    labels = if_else(
+      str_detect(labels, "^Section"),
+      labels,
+      paste0(labels, " mg L<sup>-1</sup>")
+    )
+  )
+
+lines <- tibble::tribble(
+  ~ortho_dose,           ~x, ~pipe_material,
+      "0-0.5", "2020-11-01",        "Pb-Cu",
+        "1.0", "2020-11-01",        "Pb-Cu",
+   "2.0-0.75", "2020-11-01",        "Pb-Cu",
+      "0-0.5", "2019-01-29",        "Pb #1",
+      "0-0.5", "2019-01-29",        "Pb #2",
+      "0-0.5", "2019-01-29",        "Pb-Cu",
+        "1.0", "2018-03-13",        "Pb #1",
+        "1.0", "2018-03-13",        "Pb #2",
+        "1.0", "2018-03-13",        "Pb-Cu",
+   "2.0-0.75", "2018-03-13",        "Pb #1",
+   "2.0-0.75", "2018-03-13",        "Pb #2",
+   "2.0-0.75", "2018-03-13",        "Pb-Cu",
+   "2.0-0.75", "2019-04-16",        "Pb #1",
+   "2.0-0.75", "2019-04-16",        "Pb #2",
+   "2.0-0.75", "2019-04-16",        "Pb-Cu"
+  ) %>%
+  mutate(
+    x = as.Date(x),
+    ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")
+  )
+
+# plot:
 
 plot_fig6 <- function(preds_diss_sum, preds_part_sum) {
 
@@ -710,35 +709,15 @@ plot_fig6 <- function(preds_diss_sum, preds_part_sum) {
       inherit.aes = FALSE, alpha = .75, fill = palette[4],
       show.legend = c("col" = FALSE, "fill" = FALSE)
     ) +
-    # geom_rect(
-    #   data = function(x) {
-    #     x %>%
-    #       group_by(pipe_material, ortho_dose) %>%
-    #       summarize(xmin = min(date)) %>%
-    #       mutate(
-    #         xmax = as.Date("2018-03-13"),
-    #         ymin = 0, ymax = Inf
-    #       )
-    #   },
-    #   aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-    #   inherit.aes = FALSE, alpha = .2
-    # ) +
-    # geom_segment(
-    #   data = lines[1:3,] %>%
-    #     mutate(y = 0, yend = Inf),
-    #   aes(x = x, xend = x, y = y, yend = yend, col = "zPb removed"),
-    #   inherit.aes = FALSE, #linetype = 3
-    # ) +
     ggtext::geom_richtext(
       data = annotations,
       aes(x = as.Date(x), y = y, label = labels),
       inherit.aes = FALSE, vjust = "inward", hjust = 0,
       label.padding = unit(0.2, "lines"), label.size = 0,
-      show.legend = FALSE, size = 1.75, alpha = .75,
+      show.legend = FALSE, size = 2, alpha = .75,
       label.r = unit(0, "cm")
     ) +
     geom_vline(
-      # data = lines[-3:-1,],
       data = lines,
       aes(xintercept = x),
       linetype = 3, show.legend = FALSE
@@ -785,6 +764,8 @@ ggsave("Rmarkdown/figures/figure-6.png", fig6, width = 7, height = 4, dpi = 600)
 
 #------------------ figure 7 ------------------
 
+# generate ratios:
+
 preds_d <- bind_rows(
   "<0.45 µm" = preds_diss %>%
     ungroup() %>%
@@ -815,23 +796,37 @@ preds_d_summ <- preds_d %>%
 preds_d_spag <- preds_d %>%
   filter(.draw %in% withr::with_seed(12450, {sample(1:4000, 200)}))
 
+# annotations:
+
 lines_d <- preds_d %>%
   distinct(difference) %>%
-  crossing(filter(lines, lubridate::year(x) == 2019)) %>%
+  crossing(filter(lines, lubridate::year(x) <= 2019)) %>%
   filter(str_detect(difference, ortho_dose)) %>%
-  distinct(difference, x, pipe_material) %>%
-  mutate(
-    label = if_else(
-      x == "2019-01-29",
-      "P introduced:<br>0-0.5 mg P L<sup>-1</sup>",
-      "P decreased:<br>2-0.75 mg P L<sup>-1</sup>"
-    ),
-    xlab = if_else(
-      x == "2019-01-29",
-      as.Date("2018-02-01"),
-      as.Date("2018-11-01")
-    )
-  )
+  distinct(difference, x, pipe_material)
+
+annotate_ratios <- tibble::tribble(
+                                                   ~difference,        ~date, ~y,   ~label,
+     "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2017-10-01",  0,    "0:0",
+     "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2018-09-01",  0,    "0:1",
+     "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2019-09-01",  0,  "0.5:1",
+  "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2017-10-01",  0,    "0:0",
+  "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2018-09-01",  0,    "1:2",
+  "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2020-01-01",  0, "1:0.75"
+  ) %>%
+  mutate(date = as.Date(date)) %>%
+  crossing(distinct(preds_d, pipe_material, type)) %>%
+  filter(pipe_material == "Pb #2")
+
+label_ratios <- tibble::tribble(
+                                                   ~difference,        ~date,   ~y,      ~label,
+     "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2017-10-01", 0.08, "P ratios:",
+  "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2017-10-01", 0.08, "P ratios:"
+  ) %>%
+  mutate(date = as.Date(date)) %>%
+  crossing(distinct(preds_d, pipe_material, type)) %>%
+  filter(pipe_material == "Pb #2", type == "<0.45 µm")
+
+# plot:
 
 ratio_plot <- function(x, ...) {
 
@@ -843,19 +838,32 @@ ratio_plot <- function(x, ...) {
       cols = vars(type)
     ) +
     geom_hline(yintercept = 1) +
+    ggtext::geom_richtext(
+      data = annotate_ratios %>%
+        filter(...),
+      aes(x = date, y = y, label = label),
+      inherit.aes = FALSE,
+      vjust = "inward",
+      label.padding = unit(0.1, "lines"),
+      label.size = 0,
+      size = 2, alpha = .75,
+      label.r = unit(0, "cm")
+    ) +
     geom_vline(
       data = lines_d %>%
         filter(...),
       aes(xintercept = x), linetype = 3
     ) +
     ggtext::geom_richtext(
-      data = lines_d %>%
-        filter(...) %>%
-        slice(1),
-      aes(x = xlab, y = 0, label = label),
-      inherit.aes = FALSE, vjust = "inward", hjust = 0,
-      label.padding = unit(0.2, "lines"), label.size = 0,
-      show.legend = FALSE, size = 2, alpha = .75,
+      data = label_ratios %>%
+        filter(...),
+      aes(x = date, y = y, label = label),
+      inherit.aes = FALSE,
+      vjust = "inward",
+      hjust = "inward",
+      label.padding = unit(0.1, "lines"),
+      label.size = 0,
+      size = 2,
       label.r = unit(0, "cm")
     ) +
     geom_ribbon(aes(ymin = .lower, ymax = .upper), col = NA, alpha = .5) +
@@ -884,7 +892,8 @@ ratio_plot <- function(x, ...) {
     scale_y_log10() +
     theme(
       axis.text.x = element_text(angle = 35, hjust = 1)
-    )
+    ) +
+    coord_cartesian(xlim = as.Date(c("2017-07-01", "2021-09-01")))
 }
 
 p1 <- preds_d_summ %>%
@@ -1134,7 +1143,7 @@ fig8c <- pdat %>%
   theme(
     legend.margin = margin(),
     strip.text = ggtext::element_markdown()
-  ) +s
+  ) +
   labs(
     x = NULL,
     y = NULL,
@@ -1152,16 +1161,7 @@ ggsave("Rmarkdown/figures/figure-8.png", fig8, width = 3.33, height = 6, dpi = 6
 
 #------------------ figure 9 ------------------
 
-annotations_short <- tibble::tribble(
-            ~x, ~pipe_material,                                      ~labels, ~y, ~ortho_dose,
-  "2018-01-01",        "Pb #1", "P introduced:<br>0-0.5 mg P L<sup>-1</sup>", Inf,    "0-0.5",
-  "2019-03-01",        "Pb #2", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>", Inf, "2.0-0.75"
-  )
-
-lines_short <- lines %>%
-  distinct(ortho_dose, x) %>%
-  filter(x < "2020-01-01") %>%
-  mutate(ortho_dose = str_remove(ortho_dose, " mg P L<sup>-1</sup>"))
+# generate ratios:
 
 preds_fdiss <- preds_diss %>%
   ungroup() %>%
@@ -1176,6 +1176,22 @@ preds_fdiss_summ <- preds_fdiss %>%
   group_by(across(group_vars(preds_diss))) %>%
   summarize_preds(retrans = FALSE, pred_var = "fdiss")
 
+# annotations:
+
+annotations_short <- tibble::tribble(
+            ~x, ~pipe_material,                                      ~labels,  ~y, ~ortho_dose,
+  "2018-01-01",        "Pb #1", "P introduced:<br>0-0.5 mg P L<sup>-1</sup>", Inf,     "0-0.5",
+  "2019-03-01",        "Pb #2", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>", Inf,  "2.0-0.75",
+  "2017-07-01",        "Pb-Cu",     "Conditioning:<br>0 mg P L<sup>-1</sup>", Inf,          NA
+  )
+
+lines_short <- lines %>%
+  distinct(ortho_dose, x) %>%
+  filter(x < "2020-01-01", x > "2019-01-01") %>%
+  mutate(ortho_dose = str_remove(ortho_dose, " mg P L<sup>-1</sup>"))
+
+# plot:
+
 fig9 <- preds_fdiss_summ %>%
   ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) +
   facet_wrap(vars(pipe_material), ncol = 1) +
@@ -1183,7 +1199,7 @@ fig9 <- preds_fdiss_summ %>%
     data = function(x) {
       x %>%
         group_by(pipe_material, ortho_dose) %>%
-        summarize(xmin = min(date)) %>%
+        summarize(xmin = min(date) - 50) %>%
         mutate(
           xmax = as.Date("2018-03-13"),
           ymin = 0, ymax = Inf
@@ -1202,7 +1218,7 @@ fig9 <- preds_fdiss_summ %>%
     aes(x = as.Date(x), y = y, label = labels, col = ortho_dose),
     inherit.aes = FALSE, vjust = "inward", hjust = 0,
     label.padding = unit(0.2, "lines"), label.size = 0,
-    show.legend = FALSE, size = 2.5, fill = alpha("white", 0.75),
+    show.legend = FALSE, size = 2, fill = alpha("white", 0.75),
     label.r = unit(0, "cm")
   ) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5, col = NA) +
