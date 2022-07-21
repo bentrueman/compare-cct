@@ -26,7 +26,7 @@ library("lubridate", include.only = c("year", "yday"))
 library("ggtext", include.only = c("element_markdown", "geom_richtext"))
 library("tibble", include.only = c("tribble", "rowid_to_column"))
 
-theme_set(theme_bw() + theme(legend.position = "bottom"))
+theme_set(theme_bw() + theme(legend.position = "bottom", plot.tag = element_text(face = "bold")))
 palette <- wesanderson::wes_palette("Zissou1", 6, "continuous")
 
 #------------------ load ------------------
@@ -38,29 +38,50 @@ pk_vals <- readr::read_csv("data-clean/pareto-k-values.csv")
 locations <- model_in %>%
   distinct(location, ortho_dose, pipe_material)
 
+#------------------ model predictions ------------------
+
+preds_diss <- add_pred_draws_car1(model_in, model_diss)
+preds_part <- add_pred_draws_car1(model_in, model_part)
+
+preds_diss_sum <- preds_diss %>%
+  select(.epred) %>%
+  summarize_preds(y_var = model_in$lead_dissolved, recensor = TRUE)
+
+preds_part_sum <- preds_part %>%
+  select(.epred) %>%
+  summarize_preds(y_var = model_in$lead_part, recensor = TRUE)
+
 #------------------ figure 1 ------------------
+
+# panel (a):
 
 annotations <- tibble::tribble(
          ~date, ~value,                                                        ~label,
   "2018-12-01",   0.01,                                            "1. Non-linearity",
   "2020-10-01",  1e-04,                                           "2. Left-censoring",
-  "2020-03-01",   0.04, "3. Autocorrelation\n(clustering of similar\nvalues in time)",
-  "2018-04-01",    0.7,                            "4. Irregular sampling\nfrequency",
-  "2021-05-01",    0.5,                                          "5. Extreme\nvalues"
+  "2020-03-01",  0.045,     "3. Autocorrelation\n(similar values\nclustered in time)",
+  "2018-05-01",   0.85,                            "4. Irregular sampling\nfrequency",
+  "2021-06-01",    0.5,                                          "5. Extreme\nvalues"
   ) %>%
   mutate(date = as.Date(date))
 
-fig1 <- model_in %>%
+fig1a <- model_in %>%
   filter(location == "LP31") %>%
   pivot_longer(c(lead_part, lead_dissolved), names_to = "type") %>%
   ggplot(aes(date, value)) +
-  geom_rug(sides = "t", color = "grey", length = unit(.02, "npc")) +
+  geom_rug(sides = "t", length = unit(.02, "npc")) +
   geom_label(
     data = annotations,
     aes(label = label),
     alpha = .8, label.r = unit(0, "cm"),
     label.size = 0,
-    size = 2
+    size = 2.25
+  ) +
+  geom_segment(
+    data = tibble(x = "2019-02-01", xend = "2019-09-01", y = 1.1, yend = 2),
+    # data = tibble(x = "2018-12-01", xend = "2019-09-01", y = .72, yend = 2),
+    aes(x = as.Date(x), xend = as.Date(xend), y = y, yend = yend),
+    inherit.aes = FALSE, size = .3
   ) +
   geom_line(aes(col = type)) +
   scale_y_log10(
@@ -71,9 +92,99 @@ fig1 <- model_in %>%
     values = palette[c(6, 1)],
     labels = c("<0.45 µm", ">0.45 µm")
   ) +
-  labs(x = NULL, y = expression("[Pb] (µg L"^-1*")"), col = NULL)
+  labs(x = NULL, y = expression("[Pb] (µg L"^-1*")"), col = NULL) +
+  theme(
+    legend.box.margin = margin(),
+    legend.margin = margin()
+  )
 
-ggsave("Rmarkdown/figures/figure-1.png", fig1, device = "png", width = 3.33, height = 2.5, dpi = 600)
+# panel (b):
+
+intercepts_diss <- conditional_effects(model_diss) # for group-level intercepts (alpha)
+preds_info <- bind_cols(model_in, fitted(model_diss, incl_autocor = FALSE)) # for error term
+
+add_components <- function(label = "+") {
+  geom_label(
+    data = tibble(x = Inf, y = Inf, label = label),
+    aes(x = x, y = y, label = label),
+    hjust = "inward", size = 5,
+    label.padding = unit(.5, "lines"),
+    label.size = 0,
+    alpha = 0,
+    inherit.aes = FALSE,
+    col = "grey50"
+  )
+}
+
+p0 <- intercepts_diss["location"]$location %>%
+  ggplot(aes(location, estimate__)) +
+  geom_errorbar(aes(ymin = lower__, ymax = upper__), width = 0) +
+  geom_point() +
+  theme_void() +
+  labs(title = "Intercepts")
+
+p1 <- smooth_terms_diss[["mu: s(date_yday,bs=\"cc\")"]] %>%
+  ggplot(aes(52 * date_yday)) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = .5) +
+  geom_line(aes(y = estimate__)) +
+  theme_void() +
+  labs(title = "Seasonal") +
+  add_components()
+
+p2 <- smooth_terms_diss[["mu: s(date_numeric)"]] %>%
+  mutate(date_numeric = date_numeric + 2017) %>%
+  ggplot(aes(date_numeric)) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = .5) +
+  geom_line(aes(y = estimate__)) +
+  theme_void() +
+  labs(title = "Global (multi-year)") +
+  add_components()
+
+p3 <- smooth_terms_diss[["mu: s(date_numeric,by=location,m=1)"]] %>%
+  mutate(date_numeric = date_numeric + 2017) %>%
+  left_join(locations, by = "location") %>%
+  ggplot(aes(date_numeric, col = location)) +
+  geom_line(aes(y = estimate__), show.legend = FALSE) +
+  theme_void() +
+  scale_color_manual(values = wesanderson::wes_palette("Zissou1", 12, "continuous"))  +
+  labs(title = "Group-level (multi-year)") +
+  add_components()
+
+p4 <- tibble(
+  .epred = preds_diss_sum$.epred[preds_diss_sum$location == "LP11"],
+  .epred_nac = preds_info$Estimate[preds_info$location == "LP11"],
+  error = .epred - .epred_nac
+) %>%
+  rowid_to_column() %>%
+  ggplot(aes(rowid, error)) +
+  geom_line() +
+  theme_void() +
+  labs(title = "Error") +
+  add_components()
+
+p5 <- preds_diss_sum %>%
+  filter(location == "LP11") %>%
+  ggplot(aes(date_numeric)) +
+  geom_line(aes(y = lead_dissolved), col = "grey") +
+  geom_ribbon(aes(ymin = .lower_retrans, ymax = .upper_retrans), alpha = .3, col = NA, fill = palette[1]) +
+  geom_line(aes(y = .epred_retrans), col = palette[1]) +
+  theme_void() +
+  scale_y_log10() +
+  labs(title = "Model") +
+  add_components(label = "=")
+
+fig1b <- patchwork::wrap_plots(p0, p1, p2, p3, p4, p5, ncol = 1) &
+  coord_cartesian(clip = "off") &
+  theme(plot.title = element_text(size = 8))
+
+fig1 <- patchwork::wrap_plots(fig1a, fig1b, ncol = 1, heights = c(.8, 1.5)) +
+  patchwork::plot_annotation(tag_level = list(c("a", "b", "", "", "", "", ""))) &
+  theme(
+    plot.tag = element_text(face = "bold"),
+    plot.tag.position = c(.05, 1)
+  )
+
+ggsave("Rmarkdown/figures/figure-1.png", fig1, device = "png", width = 3.33, height = 5.4, dpi = 600)
 
 #------------------ figure 2 ------------------
 
@@ -254,8 +365,7 @@ p3 <- models_initial %>%
   )
 
 fig2 <- patchwork::wrap_plots(p1, p2, p3, heights = c(2, 1, 1)) +
-  patchwork::plot_annotation(tag_level = "a") &
-  theme(plot.tag = element_text(face = "bold"))
+  patchwork::plot_annotation(tag_level = "a")
 
 ggsave("Rmarkdown/figures/figure-2.png", fig2, width = 7, height = 6, dpi = 600)
 
@@ -425,10 +535,6 @@ plot_fig4 <- function(smooth_terms_diss, smooth_terms_part, smooth_terms_spag) {
   ) +
     patchwork::plot_layout(guides = "collect") +
     patchwork::plot_annotation(tag_level = "a") &
-    theme(
-      plot.tag = element_text(face = "bold"),
-      legend.position = "bottom"
-    ) &
     scale_color_manual(values = palette[c(6,4,1)]) &
     scale_fill_manual(values = palette[c(6,4,1)])
 }
@@ -588,28 +694,12 @@ fig5 <- patchwork::wrap_plots(
 ) +
   patchwork::plot_layout(guides = "collect") +
   patchwork::plot_annotation(tag_level = "a") &
-  theme(
-    plot.tag = element_text(face = "bold"),
-    legend.margin = margin()
-  ) &
+  theme(legend.margin = margin()) &
   guides(col = guide_legend(override.aes = list(size = .5), ncol = 2))
 
 ggsave("Rmarkdown/figures/figure-5.png", fig5, width = 3.33, height = 6, dpi = 600)
 
 #------------------ figure 6 ------------------
-
-# generate predictions:
-
-preds_diss <- add_pred_draws_car1(model_in, model_diss)
-preds_part <- add_pred_draws_car1(model_in, model_part)
-
-preds_diss_sum <- preds_diss %>%
-  select(.epred) %>%
-  summarize_preds(y_var = model_in$lead_dissolved, recensor = TRUE)
-
-preds_part_sum <- preds_part %>%
-  select(.epred) %>%
-  summarize_preds(y_var = model_in$lead_part, recensor = TRUE)
 
 # annotations:
 # n.b., dates reflect label positions;
@@ -912,8 +1002,7 @@ p2 <- preds_d_summ %>%
 
 fig7 <- patchwork::wrap_plots(p1, p2, nrow = 2) +
   patchwork::plot_annotation(tag_level = "a") +
-  patchwork::plot_layout(guides = "collect") &
-  theme(plot.tag = element_text(face = "bold"))
+  patchwork::plot_layout(guides = "collect")
 
 ggsave("Rmarkdown/figures/figure-7.png", fig7, width = 3.33, height = 5, dpi = 600)
 
@@ -1154,8 +1243,7 @@ fig8 <- patchwork::wrap_plots(
   fig8a, fig8b, fig8c,
   nrow = 3, heights = c(.8, 1.2, .5)
 ) +
-  patchwork::plot_annotation(tag_level = "a") &
-  theme(plot.tag = element_text(face = "bold"))
+  patchwork::plot_annotation(tag_level = "a")
 
 ggsave("Rmarkdown/figures/figure-8.png", fig8, width = 3.33, height = 6, dpi = 600)
 
@@ -1381,7 +1469,6 @@ patchwork_fun <- function(panels, model_summ) {
       labels = c("≥ 400", "< 400"),
       limits = c(FALSE, TRUE)
     ) &
-    theme(plot.tag = element_text(face = "bold")) &
     guides(shape = guide_legend(override.aes = list(size = 2)))
 }
 
