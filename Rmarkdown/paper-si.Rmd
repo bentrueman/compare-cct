@@ -91,4 +91,8 @@ knitr::include_graphics(here::here("Rmarkdown/figures/figure-s7.png"))
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-s8.png"))
 ```
 
+```{r figure-s9, fig.cap="**Figure S9.** True colour over the study period in pipe loop feedwater."}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s9.png"))
+```
+
 # References  

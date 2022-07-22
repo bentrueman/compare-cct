@@ -12,6 +12,7 @@ library("purrr")
 library("patchwork")
 library("readr")
 library("posterior")
+library("lubridate")
 library("withr", include.only = "with_seed")
 library("ggdist", include.only = c("stat_halfeye", "median_qi"))
 library("glue", include.only = "glue")
@@ -22,7 +23,6 @@ library("wesanderson", include.only = "wes_palette")
 library("ggh4x", include.only = "facetted_pos_scales")
 library("mgcv", include.only = "gam")
 library("broom", include.only = "tidy")
-library("lubridate", include.only = c("year", "yday"))
 library("ggtext", include.only = c("element_markdown", "geom_richtext"))
 library("tibble", include.only = c("tribble", "rowid_to_column"))
 
@@ -1086,7 +1086,10 @@ fig8a <- slopes_sum %>%
     rows = vars(name = fct_relevel(name, "Smooth", after = 0L)),
     cols = vars(fraction),
     scales = "free_y",
-    labeller = labeller(name = as_labeller(c("Local slope" = "Local\nslope", "Smooth" = "Trend")))
+    labeller = labeller(name = as_labeller(c(
+      "Local slope" = "*f'*<sub>global</sub>(t)",
+      "Smooth" = "*f*<sub>global</sub>(t)"
+    )))
   ) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5) +
   geom_line(
@@ -1113,7 +1116,10 @@ fig8a <- slopes_sum %>%
     col = "grey"
   ) +
   labs(x = NULL, y = "Effect") +
-  theme(axis.text.x = element_text(angle = 35, hjust = 1))
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    strip.text.y = ggtext::element_markdown()
+  )
 
 fig8b_in <- pdat %>%
   filter(
@@ -1129,7 +1135,7 @@ fig8b_in <- pdat %>%
   bind_rows(
     smooth_terms_diss[["mu: s(date_yday,bs=\"cc\")"]] %>%
       mutate(
-        param = "GAM (seasonal component)",
+        param = "*f*<sub>seasonal</sub>(t)",
         yday = 365 * date_yday
       )
   ) %>%
@@ -1140,10 +1146,7 @@ fig8b_in <- pdat %>%
 
 fig8b <- fig8b_in %>%
   ggplot(aes(m_d)) +
-  facet_wrap(
-    vars(param = fct_relevel(param, "GAM (seasonal component)", after = 0L)),
-    scales = "free_y", ncol = 1
-  ) +
+  facet_wrap(vars(param), scales = "free_y", ncol = 1) +
   scale_color_gradientn(colours = palette[-3]) +
   scale_x_date(date_labels = "%b") +
   ggh4x::facetted_pos_scales(
@@ -1197,7 +1200,7 @@ fig8b <- fig8b_in %>%
       unnest(smooth) %>%
       mutate(
         yday = 365 * rep(model_in$date_yday, n_smooths),
-        param = "GAM (seasonal component)",
+        param = "*f*<sub>seasonal</sub>(t)",
         m_d = as.Date(glue::glue("2022-{pmax(yday, 1)}"), "%Y-%j")
       ) %>%
       distinct(smooth_term, .draw, yday, value, param, m_d),
@@ -1241,7 +1244,7 @@ fig8c <- pdat %>%
 
 fig8 <- patchwork::wrap_plots(
   fig8a, fig8b, fig8c,
-  nrow = 3, heights = c(.8, 1.2, .5)
+  nrow = 3, heights = c(.85, 1.2, .5)
 ) +
   patchwork::plot_annotation(tag_level = "a")
 
@@ -1542,6 +1545,27 @@ fig_s8 <- resids %>%
   labs(x = NULL, y = "Simulated residual (transformed scale)", col = NULL)
 
 ggsave("Rmarkdown/figures/figure-s8.png", fig_s8, width = 7, height = 4.5, dpi = 600)
+
+#------------------ figure s9 ------------------
+
+fig_s9 <- pdat %>%
+  filter(param == "Colour") %>%
+  # month of the year on the x-axis:
+  mutate(
+    days = if_else(lubridate::leap_year(date), 366, 365),
+    yday = 365 * yday(date) / days,
+    date2 = as.Date(pmax(yday, 1), origin = "2021-12-31")
+  ) %>%
+  ggplot(aes(date2, value)) +
+  facet_wrap(vars(year(date)), ncol = 2) +
+  geom_line(size = .5) +
+  scale_x_date(date_labels = "%b") +
+  labs(
+    x = NULL,
+    y = "True colour (PtCo)"
+  )
+
+ggsave("Rmarkdown/figures/figure-s9.png", fig_s9, width = 7, height = 4.5, dpi = 600)
 
 #------------------ session info ------------------
 
