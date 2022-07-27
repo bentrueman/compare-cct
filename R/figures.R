@@ -1250,83 +1250,77 @@ fig8 <- patchwork::wrap_plots(
 
 ggsave("Rmarkdown/figures/figure-8.png", fig8, width = 3.33, height = 6, dpi = 600)
 
-#------------------ figure 9 ------------------
-
-# generate ratios:
-
-preds_fdiss <- preds_diss %>%
-  ungroup() %>%
-  mutate(
-    .epred_retrans = retrans(.epred, model_in$lead_dissolved),
-    lead_part_retrans = retrans(preds_part$.epred, model_in$lead_part),
-    lead_total = .epred_retrans + lead_part_retrans,
-    fdiss = lead_part_retrans / lead_total
-  )
-
-preds_fdiss_summ <- preds_fdiss %>%
-  group_by(across(group_vars(preds_diss))) %>%
-  summarize_preds(retrans = FALSE, pred_var = "fdiss")
-
-# annotations:
-
-annotations_short <- tibble::tribble(
-            ~x, ~pipe_material,                                      ~labels,  ~y, ~ortho_dose,
-  "2018-01-01",        "Pb #1", "P introduced:<br>0-0.5 mg P L<sup>-1</sup>", Inf,     "0-0.5",
-  "2019-03-01",        "Pb #2", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>", Inf,  "2.0-0.75",
-  "2017-07-01",        "Pb-Cu",     "Conditioning:<br>0 mg P L<sup>-1</sup>", Inf,          NA
-  )
-
-lines_short <- lines %>%
-  distinct(ortho_dose, x) %>%
-  filter(x < "2020-01-01", x > "2019-01-01") %>%
-  mutate(ortho_dose = str_remove(ortho_dose, " mg P L<sup>-1</sup>"))
-
-# plot:
-
-fig9 <- preds_fdiss_summ %>%
-  ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) +
-  facet_wrap(vars(pipe_material), ncol = 1) +
-  geom_rect(
-    data = function(x) {
-      x %>%
-        group_by(pipe_material, ortho_dose) %>%
-        summarize(xmin = min(date) - 50) %>%
-        mutate(
-          xmax = as.Date("2018-03-13"),
-          ymin = 0, ymax = Inf
-        )
-    },
-    aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-    inherit.aes = FALSE, alpha = .2
-  ) +
-  geom_vline(
-    data = lines_short,
-    aes(xintercept = x, col = ortho_dose),
-    linetype = 3, show.legend = FALSE
-  ) +
-  ggtext::geom_richtext(
-    data = annotations_short,
-    aes(x = as.Date(x), y = y, label = labels, col = ortho_dose),
-    inherit.aes = FALSE, vjust = "inward", hjust = 0,
-    label.padding = unit(0.2, "lines"), label.size = 0,
-    show.legend = FALSE, size = 2, fill = alpha("white", 0.75),
-    label.r = unit(0, "cm")
-  ) +
-  geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5, col = NA) +
-  geom_line() +
-  scale_fill_manual(values = palette[c(6,4,1)]) +
-  scale_color_manual(values = palette[c(6,4,1)]) +
-  labs(
-    x = NULL,
-    col = expression("mg P L"^-1),
-    fill = expression("mg P L"^-1),
-    y = expression(frac("[Pb]"[">0.45 µm"], "[Pb]"[total]))
-  ) +
-  theme(
-    legend.margin = margin(r = 25)
-  )
-
-ggsave("Rmarkdown/figures/figure-9.png", fig9, width = 3.33, height = 4.5, dpi = 600)
+# #------------------ figure 9 ------------------
+#
+# # generate ratios:
+#
+# preds_fdiss <- preds_diss %>%
+#   ungroup() %>%
+#   mutate(
+#     .epred_retrans = retrans(.epred, model_in$lead_dissolved),
+#     lead_part_retrans = retrans(preds_part$.epred, model_in$lead_part),
+#     lead_total = .epred_retrans + lead_part_retrans,
+#     fdiss = lead_part_retrans / lead_total
+#   )
+#
+# preds_fdiss_summ <- preds_fdiss %>%
+#   group_by(across(group_vars(preds_diss))) %>%
+#   summarize_preds(retrans = FALSE, pred_var = "fdiss")
+#
+# # annotations:
+#
+# annotations_short <- tibble::tribble(
+#             ~x, ~pipe_material,                                      ~labels,   ~y, ~ortho_dose,
+#   "2018-04-01",        "Pb #1", "P introduced:<br>0-0.5 mg P L<sup>-1</sup>",  Inf,     "0-0.5",
+#   "2019-03-01",        "Pb-Cu", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>",  Inf,  "2.0-0.75",
+#   "2017-10-01",        "Pb #2",                              "P introduced:",  Inf,          NA,
+#   "2017-10-01",        "Pb #2",                    "0-1 mg P L<sup>-1</sup>", 0.92,       "1.0",
+#   "2017-10-01",        "Pb #2",                    "0-2 mg P L<sup>-1</sup>", 0.78,  "2.0-0.75"
+#   )
+#
+#
+# lines_short <- lines %>%
+#   distinct(ortho_dose, x) %>%
+#   filter(x < "2020-01-01") %>%
+#   mutate(
+#     ortho_dose = str_remove(ortho_dose, " mg P L<sup>-1</sup>"),
+#     ortho_dose = if_else(x == "2018-03-13", NA_character_, ortho_dose)
+#   ) %>%
+#   distinct()
+#
+# # plot:
+#
+# fig9 <- preds_fdiss_summ %>%
+#   ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) +
+#   facet_wrap(vars(pipe_material), ncol = 1) +
+#   geom_vline(
+#     data = lines_short,
+#     aes(xintercept = x, col = ortho_dose),
+#     linetype = 3, show.legend = FALSE
+#   ) +
+#   ggtext::geom_richtext(
+#     data = annotations_short,
+#     aes(x = as.Date(x), y = y, label = labels, col = ortho_dose),
+#     inherit.aes = FALSE, vjust = "inward", hjust = 0,
+#     label.padding = unit(0.2, "lines"), label.size = 0,
+#     show.legend = FALSE, size = 2, fill = alpha("white", 0.75),
+#     label.r = unit(0, "cm")
+#   ) +
+#   geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5, col = NA) +
+#   geom_line() +
+#   scale_fill_manual(values = palette[c(6,4,1)]) +
+#   scale_color_manual(values = palette[c(6,4,1)]) +
+#   labs(
+#     x = NULL,
+#     col = expression("mg P L"^-1),
+#     fill = expression("mg P L"^-1),
+#     y = expression(frac("[Pb]"[">0.45 µm"], "[Pb]"[total]))
+#   ) +
+#   theme(
+#     legend.margin = margin(r = 25)
+#   )
+#
+# ggsave("Rmarkdown/figures/figure-9.png", fig9, width = 3.33, height = 4.5, dpi = 600)
 
 #------------------ figure s2 ------------------
 
@@ -1548,22 +1542,43 @@ ggsave("Rmarkdown/figures/figure-s8.png", fig_s8, width = 7, height = 4.5, dpi =
 
 #------------------ figure s9 ------------------
 
-fig_s9 <- pdat %>%
+p1 <- pdat %>%
   filter(param == "Colour") %>%
   # month of the year on the x-axis:
   mutate(
     days = if_else(lubridate::leap_year(date), 366, 365),
     yday = 365 * yday(date) / days,
+    # n.b., this is approximate
     date2 = as.Date(pmax(yday, 1), origin = "2021-12-31")
   ) %>%
-  ggplot(aes(date2, value)) +
-  facet_wrap(vars(year(date)), ncol = 2) +
-  geom_line(size = .5) +
+  ggplot(aes(date2, value, col = year(date))) +
+  geom_line(size = .25) +
   scale_x_date(date_labels = "%b") +
   labs(
     x = NULL,
-    y = "True colour (PtCo)"
+    y = "True colour (PtCo)",
+    col = NULL
   )
+
+p2 <- pdat %>%
+  filter(
+    param == "Aluminum",
+    str_detect(location, "LP\\dA")
+  ) %>%
+  mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>%
+  ggplot(aes(date, value, col = ortho_dose)) +
+  geom_line() +
+  scale_y_log10() +
+  scale_color_manual(values = palette[c(1,4,6)]) +
+  theme(legend.text = element_markdown()) +
+  labs(
+    x = NULL,
+    y = expression("[Al] (µg L"^-1*")"),
+    col = NULL
+  )
+
+fig_s9 <- wrap_plots(p1, p2, ncol = 1) +
+  plot_annotation(tag_levels = "a")
 
 ggsave("Rmarkdown/figures/figure-s9.png", fig_s9, width = 7, height = 4.5, dpi = 600)
 
