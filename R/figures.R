@@ -991,14 +991,14 @@ p1 <- preds_d_summ %>%
     pipe_material %in% c("Pb #1", "Pb #2"),
     difference == "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>"
   ) +
-  labs(y = expression(frac("0-0.5 mg P L"^-1, "1 mg P L"^-1)))
+  labs(y = expression(frac("[Pb]"["0-0.5 mg P L"^-1], "[Pb]"["1 mg P L"^-1])))
 
 p2 <- preds_d_summ %>%
   ratio_plot(
     pipe_material %in% c("Pb #1", "Pb #2"),
     difference == "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>"
   ) +
-  labs(y = expression(frac("1 mg P L"^-1, "2-0.75 mg P L"^-1)))
+  labs(y = expression(frac("[Pb]"["1 mg P L"^-1], "[Pb]"["2-0.75 mg P L"^-1])))
 
 fig7 <- patchwork::wrap_plots(p1, p2, nrow = 2) +
   patchwork::plot_annotation(tag_level = "a") +
@@ -1021,7 +1021,7 @@ toc_art <- preds_d_summ %>%
     difference == "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>"
   ) +
   theme(strip.text.y = element_blank()) +
-  labs(y = expression(frac("1 mg P L"^-1, "2-0.75 mg P L"^-1)))
+  labs(y = expression(frac("[Pb]"["1 mg P L"^-1], "[Pb]"["2-0.75 mg P L"^-1])))
 
 ggsave("Rmarkdown/figures/figure-toc.png", toc_art, width = 3.33, height = 1.8, dpi = 600)
 
@@ -1249,78 +1249,6 @@ fig8 <- patchwork::wrap_plots(
   patchwork::plot_annotation(tag_level = "a")
 
 ggsave("Rmarkdown/figures/figure-8.png", fig8, width = 3.33, height = 6, dpi = 600)
-
-# #------------------ figure 9 ------------------
-#
-# # generate ratios:
-#
-# preds_fdiss <- preds_diss %>%
-#   ungroup() %>%
-#   mutate(
-#     .epred_retrans = retrans(.epred, model_in$lead_dissolved),
-#     lead_part_retrans = retrans(preds_part$.epred, model_in$lead_part),
-#     lead_total = .epred_retrans + lead_part_retrans,
-#     fdiss = lead_part_retrans / lead_total
-#   )
-#
-# preds_fdiss_summ <- preds_fdiss %>%
-#   group_by(across(group_vars(preds_diss))) %>%
-#   summarize_preds(retrans = FALSE, pred_var = "fdiss")
-#
-# # annotations:
-#
-# annotations_short <- tibble::tribble(
-#             ~x, ~pipe_material,                                      ~labels,   ~y, ~ortho_dose,
-#   "2018-04-01",        "Pb #1", "P introduced:<br>0-0.5 mg P L<sup>-1</sup>",  Inf,     "0-0.5",
-#   "2019-03-01",        "Pb-Cu", "P decreased:<br>2-0.75 mg P L<sup>-1</sup>",  Inf,  "2.0-0.75",
-#   "2017-10-01",        "Pb #2",                              "P introduced:",  Inf,          NA,
-#   "2017-10-01",        "Pb #2",                    "0-1 mg P L<sup>-1</sup>", 0.92,       "1.0",
-#   "2017-10-01",        "Pb #2",                    "0-2 mg P L<sup>-1</sup>", 0.78,  "2.0-0.75"
-#   )
-#
-#
-# lines_short <- lines %>%
-#   distinct(ortho_dose, x) %>%
-#   filter(x < "2020-01-01") %>%
-#   mutate(
-#     ortho_dose = str_remove(ortho_dose, " mg P L<sup>-1</sup>"),
-#     ortho_dose = if_else(x == "2018-03-13", NA_character_, ortho_dose)
-#   ) %>%
-#   distinct()
-#
-# # plot:
-#
-# fig9 <- preds_fdiss_summ %>%
-#   ggplot(aes(date, fdiss, col = ortho_dose, fill = ortho_dose)) +
-#   facet_wrap(vars(pipe_material), ncol = 1) +
-#   geom_vline(
-#     data = lines_short,
-#     aes(xintercept = x, col = ortho_dose),
-#     linetype = 3, show.legend = FALSE
-#   ) +
-#   ggtext::geom_richtext(
-#     data = annotations_short,
-#     aes(x = as.Date(x), y = y, label = labels, col = ortho_dose),
-#     inherit.aes = FALSE, vjust = "inward", hjust = 0,
-#     label.padding = unit(0.2, "lines"), label.size = 0,
-#     show.legend = FALSE, size = 2, fill = alpha("white", 0.75),
-#     label.r = unit(0, "cm")
-#   ) +
-#   geom_ribbon(aes(ymin = .lower, ymax = .upper), alpha = .5, col = NA) +
-#   geom_line() +
-#   scale_fill_manual(values = palette[c(6,4,1)]) +
-#   scale_color_manual(values = palette[c(6,4,1)]) +
-#   labs(
-#     x = NULL,
-#     col = expression("mg P L"^-1),
-#     fill = expression("mg P L"^-1),
-#     y = expression(frac("[Pb]"[">0.45 µm"], "[Pb]"[total]))
-#   ) +
-#   theme(
-#     legend.margin = margin(r = 25)
-#   )
-#
-# ggsave("Rmarkdown/figures/figure-9.png", fig9, width = 3.33, height = 4.5, dpi = 600)
 
 #------------------ figure s2 ------------------
 
