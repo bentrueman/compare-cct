@@ -51,6 +51,9 @@ preds_part_sum <- preds_part %>%
   select(.epred) %>%
   summarize_preds(y_var = model_in$lead_part, recensor = TRUE)
 
+smooth_terms_part <- conditional_smooths(model_part)
+smooth_terms_diss <- conditional_smooths(model_diss)
+
 #------------------ figure 1 ------------------
 
 # panel (a):
@@ -69,7 +72,7 @@ fig1a <- model_in %>%
   filter(location == "LP31") %>%
   pivot_longer(c(lead_part, lead_dissolved), names_to = "type") %>%
   ggplot(aes(date, value)) +
-  geom_rug(sides = "t", length = unit(.02, "npc")) +
+  geom_rug(sides = "t", length = unit(.02, "npc"), size = .3) +
   geom_label(
     data = annotations,
     aes(label = label),
@@ -79,7 +82,6 @@ fig1a <- model_in %>%
   ) +
   geom_segment(
     data = tibble(x = "2019-02-01", xend = "2019-09-01", y = 1.1, yend = 2),
-    # data = tibble(x = "2018-12-01", xend = "2019-09-01", y = .72, yend = 2),
     aes(x = as.Date(x), xend = as.Date(xend), y = y, yend = yend),
     inherit.aes = FALSE, size = .3
   ) +
@@ -436,9 +438,6 @@ ggsave("Rmarkdown/figures/figure-3.png", fig3, width = 3.33, height = 4, dpi = 6
 #------------------ figure 4 ------------------
 
 n_smooths <- 200
-
-smooth_terms_part <- conditional_smooths(model_part)
-smooth_terms_diss <- conditional_smooths(model_diss)
 
 # repeated for supplementary figures of the models fitted to simulated data:
 
@@ -898,10 +897,10 @@ annotate_ratios <- tibble::tribble(
                                                    ~difference,        ~date, ~y,   ~label,
      "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2017-10-01",  0,    "0:0",
      "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2018-09-01",  0,    "0:1",
-     "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2019-09-01",  0,  "0.5:1",
+     "0-0.5 mg P L<sup>-1</sup> /<br> 1.0 mg P L<sup>-1</sup>", "2019-09-25",  0,  "0.5:1",
   "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2017-10-01",  0,    "0:0",
   "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2018-09-01",  0,    "1:2",
-  "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2020-01-01",  0, "1:0.75"
+  "1.0 mg P L<sup>-1</sup> /<br> 2.0-0.75 mg P L<sup>-1</sup>", "2020-01-25",  0, "1:0.75"
   ) %>%
   mutate(date = as.Date(date)) %>%
   crossing(distinct(preds_d, pipe_material, type)) %>%
@@ -928,17 +927,6 @@ ratio_plot <- function(x, ...) {
       cols = vars(type)
     ) +
     geom_hline(yintercept = 1) +
-    ggtext::geom_richtext(
-      data = annotate_ratios %>%
-        filter(...),
-      aes(x = date, y = y, label = label),
-      inherit.aes = FALSE,
-      vjust = "inward",
-      label.padding = unit(0.1, "lines"),
-      label.size = 0,
-      size = 2, alpha = .75,
-      label.r = unit(0, "cm")
-    ) +
     geom_vline(
       data = lines_d %>%
         filter(...),
@@ -953,7 +941,18 @@ ratio_plot <- function(x, ...) {
       hjust = "inward",
       label.padding = unit(0.1, "lines"),
       label.size = 0,
-      size = 2,
+      size = 2.5,
+      label.r = unit(0, "cm")
+    ) +
+    ggtext::geom_richtext(
+      data = annotate_ratios %>%
+        filter(...),
+      aes(x = date, y = y, label = label),
+      inherit.aes = FALSE,
+      vjust = "inward",
+      label.padding = unit(0.1, "lines"),
+      label.size = 0,
+      size = 2.5, alpha = .75,
       label.r = unit(0, "cm")
     ) +
     geom_ribbon(aes(ymin = .lower, ymax = .upper), col = NA, alpha = .5) +
