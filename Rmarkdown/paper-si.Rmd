@@ -23,7 +23,7 @@ chlorine <- readr::read_csv(here::here("data-clean/chlorine-timeline.csv"))
 wq <- readr::read_csv(here::here("data-clean/wq-summary.csv"))
 ```
 
-This document contains 8 figures, 4 tables, and 12 pages.
+This document contains 9 figures, 4 tables, and 13 pages.
 
 ```{r table-s1}
 
@@ -43,7 +43,7 @@ chlorine %>%
 
 flows %>% 
   rename_all(str_to_sentence) %>% 
-  knitr::kable(caption = "**Table S3.** Pipe array flow schedule; sampling occurred at T4, and FY-001, -002, and -003 are defined in Figure S1.")
+  knitr::kable(caption = "**Table S3.** Pipe array flow schedule; sampling occurred at T4, and FY-001, -002, and -003 are defined in Figure S1. A Modicon M221 logic controller (Schneider Electric, Canada) was used for process control. Three 2-inch ASCO 8210G100 solenoid valves (i.e., FY-001, -002 and -003) were wired to the logic controller, opening and closing according to the schedule.")
 
 ```
 
@@ -89,6 +89,10 @@ knitr::include_graphics(here::here("Rmarkdown/figures/figure-s7.png"))
 
 ```{r figure-s8, fig.cap="**Figure S8.** Simulated residuals, grouped by orthophosphate dosing protocol and pipe material. Points represent medians summarizing 4000 draws from the posterior, and error bars span the 95% credible intervals."}
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-s8.png"))
+```
+
+```{r figure-s9, fig.cap="**Figure S9. (a)** True colour in pipe loop feedwater, by month and year. **(b)** Aluminum in feedwater, by orthophosphate dose. "}
+knitr::include_graphics(here::here("Rmarkdown/figures/figure-s9.png"))
 ```
 
 # References  

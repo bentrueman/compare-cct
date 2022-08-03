@@ -25,15 +25,15 @@ cens_bound <- model_in %>%
 yrep <- preds %>%
   ungroup() %>%
   # recensor:
-  mutate(scaled_lead_dissolved = if_else(.prediction < cens_bound$bound, cens_bound$bound, .prediction)) %>%
-  filter(scaled_lead_dissolved < 10)
+  mutate(scaled_lead_dissolved = if_else(.prediction < cens_bound$bound, cens_bound$bound, .prediction))
 
-#------------------ plot ------------------
+#------------------ density plot ------------------
 
 model_in %>%
   ggplot(aes(scaled_lead_dissolved)) +
   geom_density(
-    data = yrep,
+    data = yrep %>%
+      filter(scaled_lead_dissolved < 10),
     aes(group = .draw),
     col = palette[2],
     size = .2
@@ -41,4 +41,22 @@ model_in %>%
   geom_density() +
   coord_cartesian(xlim = c(-2, 10)) +
   labs(x = "Observation/prediction", y = "Density")
+
+#------------------ proportion censored ------------------
+
+preds_mat <- preds %>%
+  pivot_wider(
+    id_cols = c(location, date),
+    names_from = .draw,
+    values_from = .prediction
+  ) %>%
+  ungroup() %>%
+  select(where(is.numeric)) %>%
+  as.matrix() %>%
+  t()
+
+bayesplot::ppc_stat(
+  1 * (model_in$cens_lead_dissolved == "left"),
+  1 * (preds_mat < cens_bound$bound)
+)
 
