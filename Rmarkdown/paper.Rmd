@@ -153,11 +153,11 @@ knitr::include_graphics(here::here("Rmarkdown/figures/figure-3.png"))
 
 The generalized additive model (GAM) does better than the constant or even the linear model in accounting for autocorrelation in the data (Figure 2). This is because it accounts for non-linear patterns that the simpler models ignore [@trueman_seasonal_2022; @murphy_generalized_2019]. GAMs can also be thought of as linear models, but instead of regressing y on x, we regress y on *functions* of x (cubic functions, for example, as in Figure 3). 
 
-$$(1)~~y = \beta_{0} + f(x_t) + \epsilon_t$$ 
-where $f(x_t)$ is a smooth function of $x_t$,
+$$(1)~~y_t = \beta_{0} + f(t) + \epsilon_t$$ 
+where $\beta_0$ is the intercept, $f(t)$ is a smooth function of $t = time$,
 
-$$(2)~~f(x_t) = \sum_{j=1}^kb_j(x_t)\beta_j$$
-$b_j(x_t)$ are the functions of $x_t$ on which $y$ is regressed, $\beta_j$ are the model coefficients, and $\epsilon_t$ is the error term. We fitted the example GAM in Figures 2--3 using the R package *mgcv* [@mgcv], which uses penalized likelihood maximization instead of ordinary least squares to choose coefficients while protecting against overfitting.
+$$(2)~~f(t) = \sum_{j=1}^kb_j(t)\beta_j$$
+$b_j(t)$ are the basis functions of $t$ that comprise $f(t)$, $\beta_j$ are the model coefficients (i.e., the basis function weights), and $\epsilon_t$ is the error term. We fitted the example GAM in Figures 2--3 using the R package *mgcv* [@mgcv], which uses penalized likelihood maximization instead of ordinary least squares to choose coefficients while protecting against overfitting.
 
 ### Residual autocorrelation 
 
@@ -192,28 +192,20 @@ Time series representing lead release to drinking water tend to feature extreme 
 
 Applying Bayes' theorem [@mcelreath_statistical_2016], the joint probability distribution of the model parameters, conditional on the data (i.e., the *posterior*), is proportional to product of the likelihood---the probability of the data, conditional on the model parameters---and the prior (i.e., the probability distribution of the model parameters uninformed by the data). 
 
-<!-- $$\begin{align} -->
-<!-- P(\theta|D) \propto P(D|\theta)P(\theta) \\ -->
-<!-- posterior \propto likelihood \times prior \\ -->
-<!-- posterior = P(\theta | D) \\ -->
-<!-- likelihood = P(D | \theta) \\ -->
-<!-- prior = P(\theta) -->
-<!-- \end{align}$$ -->
-
 The transformed dissolved or particulate lead time series, $y_t$, were modeled as follows:
 
 $$
 (5)~~
 \begin{align}
 likelihood: \\
-y_t | censored_t = 0 \sim T(\mu_t,\sigma,\nu) \\ 
-y_t | censored_t = 1 \sim F(\mu_t,\sigma,\nu) \\
-y_t | censored_t = 2 \sim G(\mu_t,\sigma,\nu) \\
+y_t | censored_t = 0 \sim T(\mu_t,\sigma,\nu)~~[observed] \\ 
+y_t | censored_t = 1 \sim F(\mu_t,\sigma,\nu)~~[left \text{-} censored] \\
+y_t | censored_t = 2 \sim g(\mu_t,\sigma,\nu)~~[interval \text{-} censored] \\
 \\
 model: \\
 \mu_t = \alpha_{pipe_i} + \sum_{j=1}^{n}f_j(t) + \phi^s r_{t-s} \\
 priors: \\
-\sigma \sim T(0, 2.5, 3) \\
+\sigma \sim Half \text{-} T(0, 2.5, 3) \\
 \nu \sim Gamma(2,0.5) \\
 \phi \sim N(0.5, 0.25) \\
 \end{align}
@@ -221,7 +213,7 @@ $$
  
 where $T$ represents the Student *t*-distribution with mean $\mu_t$, standard deviation $\sigma$, and degrees-of-freedom parameter $\nu$, determining the difference between the *t*-distribution and a Gaussian with the same $\mu$ and $\sigma$. ($Gamma$ and $N$ represent the gamma and Gaussian distributions.)
 
-Left-censored observations are indicated by the variable $censored = 1$ and were modeled using $F(x)$, the cumulative Student *t*-distribution (*i.e.*, $P(X \leq x)$, the probability that, given a set of distributional parameters, a random variable $X$ is equal to the censoring limit, $x$, *at most*) [@stan2021; @mcelreath_statistical_2016]. Interval-censored observations are indicated by $censored = 2$ and were modeled using $G(x, y)$, or $P(x \lt X \leq y) = F(y) - F(x)$, where $x$ and $y$ are the lower and upper limits, respectively. Parameters, then, were estimated without imputation of nondetects: at each iteration of the MCMC algorithm, censored observations factor into the computed posterior via the cumulative probability distribution, $F(x)$, only.
+Left-censored observations are indicated by the variable $censored = 1$ and were modeled using $F(x)$, the cumulative Student *t*-distribution (*i.e.*, $P(X \leq l)$, the probability that, given a set of distributional parameters, a random variable $X$ is equal to the censoring limit, $l$, *at most*) [@stan2021; @mcelreath_statistical_2016]. Interval-censored observations are indicated by $censored = 2$ and were modeled using $g(l, u)$, or $P(l \lt X \leq u) = F_X(u) - F_X(l)$, where $l$ and $u$ are the lower and upper limits, respectively. Parameters, then, were estimated without imputation of nondetects: at each iteration of the MCMC algorithm, censored observations factor into the computed posterior via the cumulative probability distribution, $F(l)$, only.
 
 The group-level intercepts $\alpha_{pipe_i}$ (i.e., the pipe-specific average responses) are defined as follows:
 
@@ -230,7 +222,7 @@ $$
 \begin{align}
 \alpha_{pipe_i} \sim N(\alpha, \sigma_\alpha)~~[adaptive~prior] \\
 \alpha \sim T(0.1, 2.5, 3)~~[prior~on~average~pipe] \\
-\sigma_{\alpha} \sim T(0, 2.5, 3)~~[prior~on~\sigma~of~pipes] \\ 
+\sigma_{\alpha} \sim Half \text{-} T(0, 2.5, 3)~~[prior~on~\sigma~of~pipes] \\ 
 \end{align}
 $$
 The autocorrelation coefficient $\phi^s$ is defined in equation $(4)$, and $r_{t-s}$ is the GAM residual at the previous time step, $t-s$; $r_{t-s} = y_{t-s} - \alpha_{pipe_i} - \sum_{j=1}^{n}f_j(t-s)$. The $f_j(t)$ are smooth spline functions of time that comprise the GAM, and each of the $n$ smoothers takes the following form:
@@ -244,8 +236,8 @@ f_j(t) = X_j\beta_j + Z_jb_j \\
 priors~for~GAM~coefficients: \\
 \beta_j \sim T(0, 2.5, 3)~~[unpenalized] \\
 b_j \sim N(0, \sigma_b)~~[penalized] \\
-\sigma_b \sim N(0, 0.5) (seasonal~smoother) \\
-\sigma_b \sim T(0, 2.5, 3) (global,~group-level~smoothers) \\ 
+\sigma_b \sim Half \text{-} N(0, 0.5) (seasonal~smoother) \\
+\sigma_b \sim  \text{-} T(0, 2.5, 3) (global/group \text{-}level~smoothers) \\ 
 \end{align}
 $$
 
@@ -281,7 +273,7 @@ Posterior predictions from the models---$\mu_t$ in Equation $(5)$---can be compa
 
 The three dosing protocols yielded distinct lead release distributions over most of the study, and the difference between the lowest orthophosphate dose and the other two is particularly apparent (Figure 7). The ratio of dissolved Pb concentrations at a P ratio of 0:1---comparing the 0 mg P L^-1^ control with the 1 mg P L^-1^ dose---peaked at `r signif(fig7_summ$.epred, 3)` with a 95% credible interval of `r signif(fig7_summ$.lower, 3)`--`r signif(fig7_summ$.upper, 3)` (Figure 7a). That is, lead release at 0 mg P L^-1^ was as much as 31 times higher than lead release at 1 mg P L^-1^.
 
-The dissolved Pb ratio declined following the introduction of orthophosphate at 0.5 mg P L^-1^ (i.e., at a 0.5:1 P ratio), but its 2.5th percentile---the lower bound of the 95% credible interval---remained above 1 with a single brief exception. This highlights the superior corrosion control performance of 1 mg P L^-1^ over both 0 and 0.5 mg P L^-1^ and is consistent with expectations based on geochemical solubility models [@schock1996corr].
+The dissolved Pb ratio declined following the introduction of orthophosphate at 0.5 mg P L^-1^ (i.e., at a 0.5:1 P ratio), but its 2.5^th^ percentile---the lower bound of the 95% credible interval---remained above 1 with a single brief exception. This highlights the superior corrosion control performance of 1 mg P L^-1^ over both 0 and 0.5 mg P L^-1^ and is consistent with expectations based on geochemical solubility models [@schock1996corr].
 
 Pb ratios comparing the 1 and 2--0.75 mg P L^-1^ protocols exhibited a more nuanced pattern (Figure 7b). As a comparison of either particulate or dissolved lead concentrations, the Pb ratio at a 1:2 P ratio was less than one, meaning that 2 mg P L^-1^ caused excess lead release relative to the 1 mg P L^-1^ dose. This likely occurred in the dissolved fraction as small colloids [@trueman_characterizing_2019; @li_impact_2020; @lytle_lead_2020]. 
 
@@ -291,31 +283,33 @@ The transition from 2--0.75 mg P L^-1^ reversed this pattern: the dissolved and 
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-7.png"))
 ```
 
-## Modeling autocorrelation   
-
-Autocorrelation models the dependence of observations on previous observations, or the response of the series at time $t+s$ to a shock at time $t$. The effect of the autocorrelated error term here is most evident in the response of the model to high particulate lead release after short sections of lead pipe were removed from the lead-copper pipe couples in Nov. 2020 ("Pb-Cu", Figure 6). While the time-varying mean $\mu_t$ exhibits pronounced spikes corresponding to particle release events, the underlying GAM remains smooth (Figure 4). That is, extreme and sustained deviations from typical behavior are generally captured by the error term (but still reflected in model predictions: see Figure 6 and equation 5).  
-
-Accounting for autocorrelation improved the predictive accuracy of the models, assessed here using approximate leave-one-out cross-validation on the full dataset. Approximate leave-one-out cross-validation estimates the expected log pointwise predictive density---a metric of model accuracy---for new observations not used to fit the model [@loo; @loo_paper; @mcelreath_statistical_2016]. We applied it to the particulate and dissolved lead models with continuous-time autoregressive errors and also to identically-specified models with independent errors. The autoregressive error models yielded higher expected log pointwise predictive densities (i.e., greater accuracy), exceeding the independent error models in this metric by 206 and 47 (dissolved and particulate lead models, respectively). 
-
-## Trends in particulate lead release 
-
-Over much of the study, the dissolved fraction (<0.45 µm) dominated total lead release (Figure 6). During the conditioning period in particular---before orthophosphate was introduced---particles represented a minor contribution. Orthophosphate treatment caused a sharp decrease in dissolved lead (<0.45 µm) and a concomitant increase in the particulate fraction, which is consistent with previous observations and geochemical models [@dore_study_2019; @lytle_lead_2020; @zhao_formation_2018; @abokifa_modeling_2017; @ng_new_2018; @li_controlling_2020]. Given the prominent seasonality in dissolved lead release, the particulate fraction was inversely seasonal, with higher particulate fractions in winter (Figure 6). The increase in particulate lead in the final weeks of the study is not easily explained, but it may be related to increasing feedwater aluminum concentrations (Figure S9)---previous work has shown that aluminum and orthophosphate interact to increase particulate lead release [@trueman_seasonal_2022].
-
 ## Identifying stability    
 
-Effluent lead concentrations in pipe loop studies often decrease sharply after commissioning, followed by relative stability for the remainder of the study [@wysock_statistical_1995], assuming other inputs to the system remain constant. This general pattern is represented in our model by the global multi-year trend (Figure 4b), which excludes pipe-specific and seasonal water quality variation. The stability of a pipe array---accounting for effluent from all pipes in the study---can be evaluated by considering the rate of change in this global term. Here, dissolved and particulate lead concentrations in pipe loop effluent declined significantly in the first year of operation as the system stabilized following commissioning (Figure 8a). The subtler subsequent positive and negative trends in both fractions are difficult to explain, but they may be a response to nonseasonal changes in water quality (see *Trends in particulate lead release*).
+In a typical pipe loop study, effluent lead concentrations decrease sharply after commissioning. Assuming inputs to the system remain constant, a period of relative stability usually follows [@wysock_statistical_1995]. This pattern is represented in our model by the global multi-year trend (Figure 4b), which excludes pipe-specific and seasonal water quality variation. The stability of a pipe array---accounting for effluent from all pipes in the study---can be evaluated by considering the rate of change in this global term. Here, dissolved and particulate lead concentrations in pipe loop effluent declined significantly in the first year of operation as the system stabilized following commissioning (Figure 8a). The subtler subsequent positive and negative trends in both fractions are difficult to explain, but they may be a response to changes in water quality not captured by the model (see *Trends in particulate lead release*).
 
 ```{r figure-8, fig.cap="**Figure 8. (a) ** The global multi-year smoother (*f*~global~(t)) and its estimated first derivative (*f'*~global~(t)). A random sample of 200 curves/slope estimates is superimposed, and both sets of lines are underlain by shaded regions covering the middle 95% of the respective posterior distributions. The median of the global trend is shaded red when the 95% credible interval around the local slope does not include zero. **(b--c)** Iron and water temperature, both measured in pipe rack influent, exhibited comparable seasonal patterns to lead, the latter described by the seasonal term in the GAM. Ticks at the top and bottom edges of the plot in **(b)** represent anomalously high and left-censored iron concentrations, respectively."}
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-8.png"))
 ```
 
-The variation in dissolved lead captured in Figure 8a neglects seasonality by design. And while the seasonal component of the model (Figure 8b) is described as a function of time (ordinal day), this is a proxy for the physical and chemical inputs that are expected to have caused it. The true seasonal relationship is probably complex and difficult to determine from the study data, but temperature and influent iron concentration are plausible drivers: both varied seasonally and have been shown to impact lead release (Figure 8b--c) [@masters_increased_2015; @masters_seasonal_2016; @trueman_galvanic_2017; @trueman_understanding_2016]. And although dissolved organic carbon has also been shown to impact lead release [@korshin_influence_2005; @lin_release_2008; @king_role_2022], true colour---a proxy for dissolved organic carbon [@redden_chemical_2021]---was not strongly seasonal (Figure S9). 
+The variation in dissolved lead evident in Figure 8a ignores seasonality by design. And while the seasonal component of the model (Figure 8b) is described as a function of time (ordinal day), this is a proxy for the physical and chemical inputs that are expected to have caused it. The true seasonal relationship is probably complex and difficult to determine from the study data, but temperature and influent iron concentration are plausible drivers: both varied seasonally and have been shown to impact lead release (Figure 8b--c) [@masters_increased_2015; @masters_seasonal_2016; @trueman_galvanic_2017; @trueman_understanding_2016]. And although dissolved organic carbon has also been shown to increase lead solubility [@korshin_influence_2005; @lin_release_2008; @king_role_2022], true colour---a proxy for dissolved organic carbon [@redden_chemical_2021]---was not strongly seasonal (Figure S9). 
+
+## Trends in particulate lead release 
+
+Over much of the study, the dissolved fraction (<0.45 µm) dominated total lead release (Figure 6). During the conditioning phase in particular---before orthophosphate was introduced---particles represented a minor contribution. Orthophosphate treatment caused a sharp decrease in dissolved lead (<0.45 µm) and a concomitant increase in the particulate fraction, which is consistent with previous observations and geochemical models [@dore_study_2019; @lytle_lead_2020; @zhao_formation_2018; @abokifa_modeling_2017; @ng_new_2018; @li_controlling_2020]. The prominent seasonality in dissolved lead release implies an inversely seasonal particulate fraction (Figure 6). That is, particles contributed more to the total lead concentration in winter.
+
+The decrease and subsequent increase in particulate lead beginning in late 2020 are not easily explained, but they may be related to water temperature. Seasonal temperature variation was most pronounced in the final 1.5 years of the study (Figure 8c), coinciding approximately with the apparent seasonal pattern in particulate lead (Figure 8a). Increasing feedwater aluminum concentrations may also have been a factor (Figure S9)---previous work has shown that aluminum and orthophosphate interact to increase particulate lead release [@trueman_seasonal_2022]. 
+
+## Modeling autocorrelation   
+
+Autocorrelation models the dependence of observations on previous observations, or the response of a measurement series at time $t+s$ to a shock at time $t$. The effect of the autocorrelated error term here is most evident in the response of the model to high particulate lead release after short sections of lead pipe were removed from the lead-copper pipe couples in Nov. 2020 ("Pb-Cu", Figure 6). While the time-varying mean $\mu_t$ exhibits pronounced spikes corresponding to particle release events, the underlying GAM remains smooth (Figure 4). That is, extreme and sustained deviations from typical behavior are generally captured by the error term (but still reflected in model predictions: see Figure 6 and equation 5).  
+
+Accounting for autocorrelation improved the predictive accuracy of the models, assessed here using approximate leave-one-out cross-validation on the full dataset. Approximate leave-one-out cross-validation estimates the expected log pointwise predictive density---a metric of model accuracy---for new observations not used to fit the model [@loo; @loo_paper; @mcelreath_statistical_2016]. We applied it to the particulate and dissolved lead models with continuous-time autoregressive errors and also to identically-specified models with independent errors. The autoregressive error models yielded higher expected log pointwise predictive densities (i.e., greater accuracy), exceeding the independent error models in this metric by 206 and 47 (dissolved and particulate lead models, respectively). 
 
 # Conclusion  
 
 Pipe loop study data can be difficult to analyze, owing to non-linear time trends, seasonality, autocorrelation due to repeated measurements of pipe effluent, irregular sampling frequency, extreme particulate metals concentrations, and left-censoring, or values below the detection limit. To address these difficulties, we propose a robust Bayesian generalized additive model with continuous-time first-order autoregressive errors. With this approach, there is no need to impute non-detects, assume linearity, or treat outliers specially. Moreover, the model accounts for the reduced information content in autocorrelated observations. 
 
-Our approach can be modified to suit the needs of diverse analyses. While time is the sole independent variable here, water quality parameters can easily be added as predictors if inferences concerning their effects are of interest. Moreover, any parameter in the likelihood can be modeled---including the standard deviation if model residuals are heteroskedastic. The model is equally useful for other problems featuring the partially-censored, irregularly-sampled, autocorrelated time series common in water quality analysis [@helsel_statistical]. But like many Bayesian models, this one is computationally-intensive to fit and would be difficult to implement in real-time applications.
+Our approach can be modified to suit the needs of diverse analyses. While time is the sole independent variable here, water quality parameters can easily be added as predictors if inferences concerning their effects are of interest. Moreover, any parameter in the likelihood can be modeled---including the standard deviation if model residuals are heteroskedastic. The model is equally useful for other problems featuring the partially-censored, irregularly-sampled, autocorrelated time series common in water quality analysis [@helsel_statistical]. But like many Bayesian models, this one is computationally-intensive to fit and would be difficult to implement in real-time.
 
 We demonstrate it here using data from a four-year pipe loop study and we use the model to compare orthophosphate dosing protocols and analyze time trends. The additive smooth terms comprising the model yield an informative decomposition of pipe loop time series and a more nuanced comparison of corrosion control treatments. 
 
