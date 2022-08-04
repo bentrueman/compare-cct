@@ -395,8 +395,8 @@ fig3 <- gam_basis %>%
   filter(basis_name != "(Intercept)") %>%
   mutate(
     name = fct_recode(name,
-      "Unweighted basis functions of x" = "lpmat",
-      "Weighted basis functions of x" = "lpmat_wt",
+      "Unweighted basis functions of *t*, *s<sub>i</sub>(t)*" = "lpmat",
+      "Weighted basis functions of *t*, *s<sub>i</sub>(t)&beta;<sub>i</sub>*" = "lpmat_wt",
     )
   ) %>%
   ggplot(aes(date)) +
@@ -410,25 +410,26 @@ fig3 <- gam_basis %>%
         ungroup() %>%
         filter(!str_detect(name, "Unweighted"))
     },
-    aes(y = pred, col = "sum(italic(b[j]*'('*x[t]*')'*beta[j]), j == 1, k)"),
+    aes(y = pred, col = "sum(italic(s[i]*'('*t*')'*beta[i]), i == 1, n)"),
     size = 1
   ) +
   scale_color_manual(
     values = c(wesanderson::wes_palette("Zissou1", 9, type = "continuous"), "black"),
     labels = function(breaks) {
       breaks %>%
-        str_replace("s\\(numeric_date\\)\\.", "b") %>%
-        str_replace("(b)(\\d)", "italic(\\1[\\2]*'('*x[t]*')')") %>%
+        str_replace("s\\(numeric_date\\)\\.", "s") %>%
+        str_replace("(s)(\\d)", "italic(\\1[\\2]*'('*t*')')") %>%
         parse(text = .)
     }
   ) +
   theme(
     plot.margin = margin(r = .4, l = .1, b = .1, t = .1, unit = "cm"),
-    legend.text.align = 0
+    legend.text.align = 0,
+    strip.text = element_markdown()
   ) +
   labs(
     x = NULL,
-    y = expression("log([Pb] (µg L"^-1 * ")"),
+    y = "Basis function",
     col = NULL
   ) +
   guides(col = guide_legend(nrow = 4))
