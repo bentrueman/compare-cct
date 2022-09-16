@@ -36,7 +36,7 @@ Pipe loop studies are used to model drinking water distribution systems, mainly 
 
 ## Non-linearity
 
-Non-linear time trends and seasonal variation can be difficult to describe without over- or under-fitting. They can also make it difficult to identify a stable phase, as typical guidance for analyzing pipe loop study data suggests [@wysock_statistical_1995]. The most common models for pipe loop data are usually inadequate to describe complex nonlinear variation [@simpson_modelling_2018].
+Non-linear time trends and seasonal variation can be difficult to describe without over- or under-fitting model parameters. Nonlinearity can also make it difficult to identify a stable phase, as typical guidance for analyzing pipe loop study data suggests [@wysock_statistical_1995]. The most common models for pipe loop data are usually inadequate to describe complex nonlinear variation [@simpson_modelling_2018].
 
 ## Censoring 
 
@@ -62,7 +62,7 @@ knitr::include_graphics(here::here("Rmarkdown/figures/figure-1.png"))
 
 ## A Bayesian approach 
 
-The primary goal of a pipe loop study is to compare two or more corrosion control treatments [@wysock_statistical_1995]. But the data attributes outlined above can make it difficult to choose a statistical method from the suite that is commonly applied, given their fairly rigid assumptions. Often, a more flexible approach is required, and Bayesian methods are inherently flexible since there is no need to derive the sampling distribution of an estimator [@kruschke_doing_2015]. 
+The primary goal of a pipe loop study is to compare two or more corrosion control treatments [@wysock_statistical_1995]. But the data attributes outlined above can make it difficult to choose a statistical method from the suite that is commonly applied, given the necessary assumptions. Often, a more flexible approach is required, and Bayesian methods are inherently flexible since there is no need to derive the sampling distribution of an estimator [@kruschke_doing_2015]. 
 
 Here, we propose a Bayesian generalized additive model for pipe loop study data that is sufficiently flexible for most pipe loop datasets. The collection of measurement series representing variation in a given parameter over time---often lead---is represented as the sum of five components (Figure 1b): 
 
@@ -102,7 +102,7 @@ Flow through the pipe sections was programmed to approximate typical use, and de
 
 ## Water quality analysis  
 
-Lead, iron, aluminum, and manganese were measured by ICP-MS [@sm_3125] with method detection limits estimated at 0.2, 5, 5, and 2 µg L^-1^, respectively. An aliquot of each sample was filtered at 0.45 µm using a polytetrafluoroethylene (PTFE) filter and a vacuum filter apparatus. Losses of dissolved lead by adsorption to PTFE filters have been documented previously [@minning_systematic_2015], which here would tend to bias dissolved concentrations low and particulate concentrations high. In hard waters such as the feedwater for the model system, this bias is likely to be much lower than in soft waters [@minning_systematic_2015].
+Lead, iron, aluminum, and manganese were measured by ICP-MS [@sm_3125] with method detection limits estimated at 0.2, 5, 5, and 2 µg L^-1^, respectively. An aliquot of each sample was filtered at 0.45 µm using a polytetrafluoroethylene (PTFE) filter and a vacuum filter apparatus. Losses of dissolved lead by adsorption to PTFE filters have been documented previously [@minning_systematic_2015], which here would tend to bias dissolved concentrations low and particulate concentrations high. In hard waters such as the feedwater for the model system, though, this bias is likely to be much lower than in soft waters [@minning_systematic_2015].
 
 ```{r data-summary}
 
@@ -182,7 +182,7 @@ Model code was written in Stan [@stan2021; @rstan], a C++ package for Bayesian i
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-4.png"))
 ```
 
-The models included one-dimensional global smoothers describing multi-year variation in lead across all time series (Figure 4b). The model of dissolved lead also included a global smoother describing seasonal variation (Figure 4a). And while the model assumes that seasonality strength does not vary over time, some previous work has suggested that orthophosphate may damp seasonal variation in lead [@colling_measurement_1987]. This effect could be incorporated by allowing the seasonal smoother to vary with orthophosphate dose. 
+The models included one-dimensional global smoothers describing multi-year variation in lead across all time series (Figure 4b). The model of dissolved lead also included a global smoother describing seasonal variation (Figure 4a). And while the model assumes that seasonality strength does not vary over time, some previous work has suggested that orthophosphate may damp seasonal variation in lead [@colling_measurement_1987]. This effect could be incorporated by allowing the seasonal smoother to vary with the orthophosphate dose. 
 
 Both models included group-level smoothers describing multi-year variation in lead release from each pipe (Figure 4c), a hierarchical structure that is discussed elsewhere [@pedersen_hierarchical_2019]. The multi-year smoothers were thin-plate regression splines and the seasonal smoother was a cyclic cubic regression spline [@mgcv]. To speed up computation, the response variable was log-transformed and then scaled to have zero mean and unit variance. And while it is omitted here, total lead could be predicted using the same model structure as dissolved lead.
 
@@ -195,21 +195,23 @@ The transformed dissolved or particulate lead time series, $y_t$, were modeled a
 $$
 (5)~~
 \begin{align}
-likelihood: \\
+\text{likelihood}: \\
 y_t | censored_t = 0 \sim T(\mu_t,\sigma,\nu)~~[observed] \\ 
 y_t | censored_t = 1 \sim F(\mu_t,\sigma,\nu)~~[left \text{-} censored] \\
 y_t | censored_t = 2 \sim g(\mu_t,\sigma,\nu)~~[interval \text{-} censored] \\
 \\
-model~for~\mu_t: \\
+\text{model for }\mu_t\text{:} \\
 \mu_t = \alpha_{pipe_i} + \sum_{j=1}^{n}f_j(t) + \phi^s r_{t-s} \\
-priors: \\
+r_{t-s} = y_{t-s} - \alpha_{pipe_i} - \sum_{j=1}^{n}f_j(t-s) \\
+\\
+\text{priors}: \\
 \sigma \sim Half \text{-} T(0, 2.5, 3) \\
 \nu \sim Gamma(2,0.5) \\
 \phi \sim N(0.5, 0.25) \\
 \end{align}
 $$
  
-where $T$ represents the Student *t*-distribution with mean $\mu_t$, standard deviation $\sigma$, and degrees-of-freedom parameter $\nu$, determining the difference between the *t*-distribution and a Gaussian with the same $\mu$ and $\sigma$. ($Gamma$ and $N$ represent the gamma and Gaussian distributions.)
+where $T$ represents the Student *t*-distribution with mean $\mu_t$, standard deviation $\sigma$, and degrees-of-freedom parameter $\nu$, determining the difference between the *t*-distribution and a Gaussian with the same $\mu$ and $\sigma$. ($Gamma$ and $N$ represent the gamma and Gaussian distributions, parameterized by the mean and shape parameter/standard deviation, respectively.)
 
 Left-censored observations are indicated by the variable $censored = 1$ and were modeled using $F_X(l)$, the cumulative Student *t*-distribution (*i.e.*, $P(X \leq l)$, the probability that, given a set of distributional parameters, a random variable $X$ is equal to the censoring limit, $l$, *at most*) [@stan2021; @mcelreath_statistical_2016]. Interval-censored observations are indicated by $censored = 2$ and were modeled using $g(l, u)$, or $P(l \lt X \leq u) = F_X(u) - F_X(l)$, where $l$ and $u$ are the lower and upper limits, respectively. Parameters, then, were estimated without imputing nondetects: at each iteration of the MCMC algorithm, censored observations factor into the computed posterior via the cumulative probability distribution, $F_X(x)$, only.
 
@@ -223,19 +225,19 @@ $$
 \sigma_{\alpha} \sim Half \text{-} T(0, 2.5, 3)~~[prior~on~\sigma~of~pipe~averages] \\ 
 \end{align}
 $$
-The autocorrelation coefficient $\phi^s$ is defined in equation $(4)$, and $r_{t-s}$ is the GAM residual at the previous time step, $t-s$; $r_{t-s} = y_{t-s} - \alpha_{pipe_i} - \sum_{j=1}^{n}f_j(t-s)$. The $f_j(t)$ are smooth spline functions of time that comprise the GAM, and each of the $n$ smoothers takes the following form:
+The autocorrelation coefficient $\phi^s$ is defined in equation $(4)$, and $r_{t-s}$ is the GAM residual at the previous time step, $t-s$. The $f_j(t)$ are smooth spline functions of time that comprise the GAM, and each of the $n$ smoothers takes the following form:
 
 $$
 (7)~~
 \begin{align}
-generalized~additive~model~(GAM): \\
+\text{generalized additive model (GAM)}: \\
 f_j(t) = X_j\beta_j + Z_jb_j \\
 \\
-priors~on~GAM~coefficients: \\
+\text{priors on GAM parameters}: \\
 \beta_j \sim T(0, 2.5, 3)~~[unpenalized] \\
 b_j \sim N(0, \sigma_b)~~[penalized] \\
-\sigma_b \sim Half \text{-} N(0, 0.5) (seasonal~smoother) \\
-\sigma_b \sim  Half \text{-} T(0, 2.5, 3) (global/group \text{-}level~smoothers) \\ 
+\sigma_b \sim Half \text{-} N(0, 0.5) [seasonal~smoother] \\
+\sigma_b \sim  Half \text{-} T(0, 2.5, 3) [global/group \text{-}level~smoothers] \\ 
 \end{align}
 $$
 
@@ -283,7 +285,7 @@ knitr::include_graphics(here::here("Rmarkdown/figures/figure-7.png"))
 
 ## Identifying stability    
 
-In a typical pipe loop study, effluent lead concentrations decrease sharply after commissioning. Assuming inputs to the system remain constant, a period of relative stability usually follows [@wysock_statistical_1995]. This pattern is represented in our model by the global multi-year trend (Figure 4b), which excludes pipe-specific and seasonal water quality variation. The stability of a pipe array---accounting for effluent from all pipes in the study---can be evaluated by considering the rate of change in this global term. Here, dissolved and particulate lead concentrations in pipe loop effluent declined significantly in the first year of operation as the system stabilized following commissioning (Figure 8a). The subtler subsequent positive and negative trends in both fractions are difficult to explain, but they may be a response to changes in water quality not captured directly by the model (see *Trends in particulate lead release*).
+In a typical pipe loop study, effluent lead concentrations decrease sharply after commissioning. Assuming inputs to the system remain constant, a period of relative stability usually follows [@wysock_statistical_1995]. This pattern is represented in our model by the global multi-year trend (Figure 4b), which excludes pipe-specific and seasonal water quality variation. The stability of a pipe array---accounting for effluent from all pipes in the study---can be evaluated by considering the rate of change in this global term. Here, dissolved and particulate lead concentrations in pipe loop effluent declined significantly in the first year of operation as the system stabilized (Figure 8a). The subtler subsequent positive and negative trends in both fractions are difficult to explain, but they may be a response to changes in water quality not captured directly by the model (see *Trends in particulate lead release*).
 
 ```{r figure-8, fig.cap="**Figure 8. (a) ** The global multi-year smoother (*f*~global~(t)) and its estimated first derivative (*f'*~global~(t)). A random sample of 200 curves/slope estimates is superimposed, and both sets of lines are underlain by shaded regions covering the middle 95% of the respective posterior distributions. The median of the global trend is shaded red when the 95% credible interval around *f'*~global~(t) does not include zero. **(b--c)** Iron and water temperature, both measured in pipe rack influent, exhibited comparable seasonal patterns to lead, the latter described by the seasonal term in the GAM. Ticks at the top and bottom edges of the plot in **(b)** represent anomalously high and left-censored iron concentrations, respectively."}
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-8.png"))
@@ -307,7 +309,7 @@ Accounting for autocorrelation improved the predictive accuracy of the models, a
 
 Pipe loop study data can be difficult to analyze, owing to non-linear time trends, seasonality, autocorrelation due to repeated measurements of pipe effluent, irregular sampling frequency, extreme particulate metals concentrations, and left-censoring, or values below the detection limit. To address these difficulties, we propose a robust Bayesian generalized additive model with continuous-time first-order autoregressive errors. With this approach, there is no need to impute non-detects, assume linearity, or treat outliers specially. Moreover, the model accounts for the reduced information content in autocorrelated observations. 
 
-Our approach can be modified to suit the needs of diverse analyses. While time is the sole independent variable here, water quality parameters can easily be added as predictors if inferences concerning their effects are of interest. Moreover, any parameter in the likelihood can be modeled---including the standard deviation if model residuals are heteroskedastic. The model is equally useful for other problems featuring the partially-censored, irregularly-sampled, autocorrelated time series common in water quality analysis [@helsel_statistical]. But like many Bayesian models, this one is computationally-intensive to fit and would be difficult to implement in real-time.
+Our approach can be modified to suit the needs of diverse analyses. While time is the sole independent variable here, water quality parameters can easily be added as predictors if inferences concerning their effects are of interest. Moreover, any parameter in the likelihood can be modeled---including the standard deviation if model residuals are heteroskedastic. The model is equally useful for other problems featuring the partially-censored, irregularly-sampled, autocorrelated time series common in water quality analysis [@helsel_statistical]. But like many Bayesian models, this one is computationally-intensive to fit and would be difficult to implement in real time.
 
 We demonstrate it here using data from a four-year pipe loop study and we use the model to compare orthophosphate dosing protocols and analyze time trends. The additive smooth terms comprising the model yield an informative decomposition of pipe loop time series and a more nuanced comparison of corrosion control treatments. 
 
