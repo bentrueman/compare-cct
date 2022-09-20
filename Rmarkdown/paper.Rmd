@@ -24,7 +24,7 @@ fig7_summ <- readr::read_csv(here::here("data-clean/figure-7-summary.csv"))
 
 # Abstract  
 
-Pipe loop studies are used to evaluate corrosion control treatment, and updated regulatory guidance will ensure that they remain important for water quality management. But the data they generate are difficult to analyze: non-linear time-trends, non-detects, extreme values, and autocorrelation are common attributes that make popular methods, such as the t- or rank-sum tests, poor descriptive models. Here, we propose a model for pipe loop data that accommodates many of these difficult-to-model attributes: a robust Bayesian generalized additive model with continuous-time autoregressive errors. Our approach facilitates corrosion control treatment comparisons without the need for imputing non-detects or special handling of outliers. It is well-suited to describing nonlinear trends without overfitting, and it accounts for the reduced information content in autocorrelated time series. We demonstrate it using a four-year pipe loop study, with multiple pipe configurations and orthophosphate dosing protocols, finding that an initially high dose of orthophosphate (2 mg P L^-1^) that is subsequently lowered (0.75 mg P L^-1^) can yield lower lead release than an intermediate dose (1 mg P L^-1^) in the long term. Water utilities face difficult tradeoffs in applying orthophosphate for corrosion control, and better models of pipe loop data can help inform the decision-making process.
+Pipe loop studies are used to evaluate corrosion control treatment, and updated regulatory guidance will ensure that they remain important for drinking water quality management. But the data they generate are difficult to analyze: non-linear time-trends, non-detects, extreme values, and autocorrelation are common attributes that make popular methods, such as the t- or rank-sum tests, poor descriptive models. Here, we propose a framework for describing pipe loop data that accommodates all of these challenging attributes: a robust Bayesian generalized additive model with continuous-time autoregressive errors. Our approach facilitates corrosion control treatment comparisons without the need for imputing non-detects or special handling of outliers. It is well-suited to describing nonlinear trends without overfitting, and it accounts for the reduced information content in autocorrelated time series. We demonstrate it using a four-year pipe loop study, with multiple pipe configurations and orthophosphate dosing protocols, finding that an initially high dose of orthophosphate (2 mg P L^-1^) that is subsequently lowered (0.75 mg P L^-1^) can yield lower lead release than an intermediate dose (1 mg P L^-1^) in the long term. Water utilities face difficult tradeoffs in applying orthophosphate for corrosion control, and better models of pipe loop data can help inform the decision-making process.
 
 ## Keywords
 
@@ -36,7 +36,7 @@ Pipe loop studies are used to model drinking water distribution systems, mainly 
 
 ## Non-linearity
 
-Non-linear time trends and seasonal variation can be difficult to describe without over- or under-fitting model parameters. Nonlinearity can also make it difficult to identify a stable phase, as typical guidance for analyzing pipe loop study data suggests [@wysock_statistical_1995]. The most common models for pipe loop data are usually inadequate to describe complex nonlinear variation [@simpson_modelling_2018].
+Non-linear time trends and seasonal variation can be challenging to describe without over- or under-fitting model parameters. Nonlinearity can also make it difficult to identify a stable phase, as typical guidance for analyzing pipe loop study data suggests [@wysock_statistical_1995]. The most common models for pipe loop data are usually inadequate to describe complex nonlinear variation [@simpson_modelling_2018].
 
 ## Censoring 
 
@@ -135,7 +135,7 @@ Median lead in full and partial lead pipe sections (i.e., "Pb #1--2" and "Pb-Cu"
 
 Temperature was measured using an infrared thermometer, total chlorine [@sm_4500_cl_g] and orthophosphate [@sm_4500_p_e] were measured using a spectrophotometer, and pH was measured using a benchtop meter. Water quality---including alkalinity [@sm_2320b], true colour [@sm_2120c], conductivity [@sm_2510b], fluoride [@sm_4500], total hardness [@sm_2340], and turbidity [@sm_2130b] ---is summarized in Table S4 (all Standard Methods). Colour was quantified after filtration at 0.45 µm, using mixed cellulose ester membrane filters.
 
-```{r figure-2, fig.cap="**Figure 2. (a)** Constant, linear, and generalized additive models (GAMs) fitted to an example (log-transformed) time series from the dataset, along with the residuals from each model. **(b)** Pearson correlation (*r*) between the residuals $\\epsilon$ at time *t* and *t-1*. **(c)** Pearson correlation between the residuals $\\epsilon$ at time *t* and *t-k*, where *k* is the lag and ranges from 0--21. The grey shaded regions represent $\\pm1.96/\\sqrt{n}$, or an approximate 95% confidence bound on the autocorrelation function of an uncorrelated series."}
+```{r figure-2, fig.cap="**Figure 2. (a)** Constant, linear, and generalized additive models (GAM) fitted to an example (log-transformed) time series from the dataset, along with the residuals from each model. **(b)** Pearson correlation (*r*) between the residuals $\\epsilon$ at time *t* and *t-1*. **(c)** Pearson correlation between the residuals $\\epsilon$ at time *t* and *t-k*, where *k* is the lag and ranges from 0--21. The grey shaded regions represent $\\pm1.96/\\sqrt{n}$, or an approximate 95% confidence bound on the autocorrelation function of an uncorrelated series."}
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-2.png"))
 ```
 
@@ -149,7 +149,7 @@ Lack of independence is apparent in Figure 2b: the residual of either model at t
 knitr::include_graphics(here::here("Rmarkdown/figures/figure-3.png"))
 ```
 
-The generalized additive model (GAM) does better than the constant or even the linear model in accounting for autocorrelation in the data (Figure 2). This is because it accounts for non-linear patterns that the simpler models ignore [@trueman_seasonal_2022; @murphy_generalized_2019]. GAMs can also be thought of as linear models, but instead of regressing y on x, we regress y on *functions* of x (cubic functions, for example, as in Figure 3). 
+The generalized additive model (GAM) does better than the constant or even the linear model in accounting for autocorrelation in the data (Figure 2). This is because it describes non-linear patterns that the simpler models ignore [@trueman_seasonal_2022; @murphy_generalized_2019]. GAMs can also be thought of as linear models, but instead of regressing y on x, we regress y on *functions* of x (cubic functions, for example, as in Figure 3). 
 
 $$(1)~~y_t = \beta_{0} + f(t) + \epsilon_t$$ 
 where $\beta_0$ is the intercept, $f(t)$ is a smooth function of $t = time$,
