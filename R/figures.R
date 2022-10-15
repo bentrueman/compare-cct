@@ -1027,30 +1027,12 @@ ggsave("Rmarkdown/figures/figure-toc.png", toc_art, width = 3.33, height = 1.8, 
 
 #------------------ figure 8 ------------------
 
-epsilon <- .001
-
-grid_1 <- with(
-  model_in,
-  tibble(
-    date_numeric = seq(
-      min(date_numeric),
-      max(date_numeric),
-      by = 2 * epsilon
-    )
-  )
-)
-
-grid_2 <- grid_1 %>%
-  mutate(date_numeric = date_numeric + epsilon)
-
-grid_avg <- (grid_1 + grid_2) / 2
-
 slopes <- list(
   "<0.45 µm" = model_diss,
   ">0.45 µm" = model_part
 ) %>%
   map_dfr(
-    ~ local_slope(grid_avg, .x, "date_numeric", smooth = "s(date_numeric)"),
+    ~ local_slope(model_in, .x, "date_numeric", smooth = "s(date_numeric)", pts = 1992),
     .id = "fraction"
   ) %>%
   rename(Smooth = smooth, "Local slope" = slope) %>%
