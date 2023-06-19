@@ -5,7 +5,9 @@
 
 source("R/models.R", echo = TRUE)
 library("ggplot2")
+library("tidyr")
 library("dplyr")
+library("bayesplot")
 
 theme_set(theme_bw() + theme(legend.position = "bottom"))
 palette <- wesanderson::wes_palette("Zissou1")

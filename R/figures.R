@@ -453,9 +453,9 @@ calc_spag_smooths <- function(model_diss, model_part) {
   ) %>%
     mutate(resp = map(model, ~ attributes(.x$fit)$model_name)) %>%
     unnest(resp) %>%
-    filter(!str_detect(resp, "_part$") | !smooth_term == "s(date_yday,bs=\"cc\")") %>%
+    filter(!str_detect(resp, "_part") | !smooth_term == "s(date_yday,bs=\"cc\")") %>%
     mutate(
-      type = if_else(str_detect(resp, "_diss$"), "<0.45 µm", ">0.45 µm"),
+      type = if_else(str_detect(resp, "_diss"), "<0.45 µm", ">0.45 µm"),
       smooth = map2(
         model, smooth_term,
         ~ posterior_smooths(
@@ -480,7 +480,7 @@ plot_fig4 <- function(smooth_terms_diss, smooth_terms_part, smooth_terms_spag) {
     geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = .5) +
     geom_line(
       data = smooth_terms_spag %>%
-        filter(smooth_term == "s(date_yday,bs=\"cc\")", str_detect(resp, "_diss$")) %>%
+        filter(smooth_term == "s(date_yday,bs=\"cc\")", str_detect(resp, "_diss")) %>%
         unnest(smooth) %>%
         mutate(date_yday = rep(model_in$date_yday, n_smooths)) %>%
         distinct(smooth_term, .draw, date_yday, value),
@@ -638,7 +638,7 @@ p2 <- resids %>%
   ggplot(aes(x = .residual)) +
   facet_wrap(vars(type), scales = "free_x") +
   geom_histogram(
-    aes(y = ..ncount..),
+    aes(y = after_stat(ncount)),
     binwidth = .05
   ) +
   geom_vline(xintercept = 0, col = "white", size = .3) +
@@ -1314,7 +1314,7 @@ plot_fun <- function(x, yvar = reorder(param, median), ...) {
 }
 
 panel_fun <- function(model_summ) {
-  model_summ %>%
+  panels <- model_summ %>%
     mutate(
       location = str_extract(variable, "LP\\d{2}"),
       type = case_when(
@@ -1343,17 +1343,21 @@ panel_fun <- function(model_summ) {
     left_join(locations) %>%
     mutate(ortho_dose = paste0(ortho_dose, " mg P L<sup>-1</sup>")) %>%
     group_split(type, .keep = TRUE)
+  set_names(panels, unlist(map(panels, ~ unique(.x$type))))
 }
 
 patchwork_fun <- function(panels, model_summ) {
-  p1 <- plot_fun(panels[[1]]) + # penalized GAM coefficients
+  p1 <- plot_fun(panels[["GAM coefficients (penalized)"]]) +
     theme(axis.ticks.y = element_blank())
-  p2 <- plot_fun(panels[[3]])
-  p3 <- plot_fun(panels[[4]], ortho_dose) + # rand intercepts
+  p2 <- plot_fun(panels[["Other"]])
+  p3 <- plot_fun(panels[["Random intercepts"]], ortho_dose) + # rand intercepts
     facet_wrap(vars(pipe_material)) +
     scale_x_continuous(n.breaks = 4) +
     theme(axis.text.y = ggtext::element_markdown())
-  p4 <- plot_fun(panels[[5]], ortho_dose) + # gam sds
+  p4 <- plot_fun(
+    panels[["Standard deviations of\nGAM coefficients"]],
+    ortho_dose
+  ) +
     facet_wrap(vars(pipe_material)) +
     scale_x_continuous(n.breaks = 4) +
     theme(axis.text.y = ggtext::element_markdown())
@@ -1414,12 +1418,12 @@ ggsave("Rmarkdown/figures/figure-s5.png", figs5, width = 7.5, height = 4.75, dpi
 model_sim_diss_summ <- model_sim_diss %>%
   as_draws() %>%
   posterior::summarise_draws() %>%
-  filter(!variable %in% c("lp__", "Intercept"))
+  filter(!variable %in% c("lp__", "Intercept", "lprior"))
 
 model_sim_part_summ <- model_sim_part %>%
   as_draws() %>%
   posterior::summarise_draws() %>%
-  filter(!variable %in% c("lp__", "Intercept"))
+  filter(!variable %in% c("lp__", "Intercept", "lprior"))
 
 fig_s6 <- panel_fun(model_sim_diss_summ) %>%
   patchwork_fun(model_sim_diss_summ)

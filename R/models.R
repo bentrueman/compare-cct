@@ -6,13 +6,16 @@
 source("R/formulas.R")
 library("rstan")
 library("bgamcar1")
+library("dplyr")
 
 options(mc.cores = parallel::detectCores())
 
 #------------------ inputs ------------------
 
-model_in <- readr::read_csv("data-clean/model_in.csv")
-model_in_sim <- readr::read_csv("data-clean/simulated-data.csv")
+model_in <- readr::read_csv("data-clean/model_in.csv") %>%
+  mutate(location = as.factor(location))
+model_in_sim <- readr::read_csv("data-clean/simulated-data.csv") %>%
+  mutate(location = as.factor(location))
 
 knots_yday <- c(0, 1)
 
@@ -21,64 +24,86 @@ knots_yday <- c(0, 1)
 # n.b., each takes ~30 min to fit on a 2017 Macbook Pro
 
 model_diss <- fit_stan_model(
-  "models/model_diss",
+  file = "models/model_diss",
   seed = stan_seed,
-  form_diss, model_in, prior_diss,
+  bform = form_diss,
+  bdata = model_in,
+  bpriors = prior_diss,
+  knots = list(date_yday = knots_yday),
+  backend = "cmdstanr",
   save_warmup = FALSE,
-  control = list(max_treedepth = 12),
-  knots = list(date_yday = knots_yday)
+  max_treedepth = 12
 )
 
-model_part <- fit_stan_model( 
-  "models/model_part",
+model_part <- fit_stan_model(
+  file = "models/model_part",
   seed = stan_seed,
-  form_part, model_in, prior_part, 
+  bform = form_part,
+  bdata = model_in,
+  bpriors = prior_part,
+  backend = "cmdstanr",
   save_warmup = FALSE
 )
 
 model_diss_noar <- fit_stan_model(
-  "models/model_diss_noar",
+  file = "models/model_diss_noar",
   seed = stan_seed,
-  form_diss_noar, model_in, prior_diss[-1,],
+  bform = form_diss_noar,
+  bdata = model_in,
+  bpriors = prior_diss[-1,],
+  knots = list(date_yday = knots_yday),
+  backend = "cmdstanr",
   save_warmup = FALSE,
-  control = list(max_treedepth = 12), 
-  knots = list(date_yday = knots_yday)
+  max_treedepth = 12
 )
 
 model_part_noar <- fit_stan_model(
-  "models/model_part_noar",
+  file = "models/model_part_noar",
   seed = stan_seed,
-  form_part_noar, model_in, prior_part[-1,],
+  bform = form_part_noar,
+  bdata = model_in,
+  bpriors = prior_part[-1,],
+  backend = "cmdstanr",
   save_warmup = FALSE
 )
 
 model_sim_diss <- fit_stan_model(
-  "models/model_sim_diss",
+  file = "models/model_sim_diss",
   seed = stan_seed,
-  form_diss, model_in_sim, prior_diss,
+  bform = form_diss,
+  bdata = model_in_sim,
+  bpriors = prior_diss,
+  knots = list(date_yday = knots_yday),
+  backend = "cmdstanr",
   save_warmup = FALSE,
-  knots = list(date_yday = knots_yday)
 )
 
 model_sim_part <- fit_stan_model(
-  "models/model_sim_part",
+  file = "models/model_sim_part",
   seed = stan_seed,
-  form_part_sim, model_in_sim, prior_part,
-  save_warmup = FALSE
+  bform = form_part_sim,
+  bdata = model_in_sim,
+  bpriors = prior_part,
+  save_warmup = FALSE,
+  backend = "cmdstanr"
 )
 
 model_noprior_diss <- fit_stan_model(
-  "models/model_noprior_diss",
+  file = "models/model_noprior_diss",
   seed = stan_seed,
-  form_diss, model_in, 
+  bform = form_diss,
+  bdata = model_in,
+  knots = list(date_yday = knots_yday),
+  backend = "cmdstanr",
   save_warmup = FALSE,
-  control = list(max_treedepth = 12), 
-  knots = list(date_yday = knots_yday) 
+  max_treedepth = 12
 )
 
 model_noprior_part <- fit_stan_model(
-  "models/model_noprior_part",
+  file = "models/model_noprior_part",
   seed = stan_seed,
-  form_part, model_in, 
+  bform = form_part,
+  bdata = model_in,
+  backend = "cmdstanr",
   save_warmup = FALSE
 )
