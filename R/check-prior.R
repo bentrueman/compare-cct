@@ -24,20 +24,26 @@ knots_yday <- c(0, 1)
 # prior simulation:
 
 model_prior_part <- fit_stan_model(
-  "models/prior_part",
+  file = "models/prior_part",
   seed = stan_seed,
-  form_part, model_in, prior_part,
-  save_warmup = FALSE,
-  sample_prior = "only"
+  bform = form_part,
+  bdata = model_in,
+  bpriors = prior_part,
+  sample_prior = "only",
+  backend = "cmdstanr",
+  save_warmup = FALSE
 )
 
 model_prior_diss <- fit_stan_model(
-  "models/prior_diss",
+  file = "models/prior_diss",
   seed = stan_seed,
-  form_diss, model_in, prior_diss,
-  save_warmup = FALSE,
+  bform = form_diss,
+  bdata = model_in,
+  bpriors = prior_diss,
   sample_prior = "only",
-  knots = list(date_yday = knots_yday)
+  knots = list(date_yday = knots_yday),
+  backend = "cmdstanr",
+  save_warmup = FALSE
 )
 
 # smooths:
