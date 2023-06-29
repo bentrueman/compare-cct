@@ -10,6 +10,7 @@ source("R/models.R", echo = TRUE)
 library("purrr")
 library("dplyr")
 library("posterior")
+library("rstan")
 
 #------------------ tests ------------------
 
@@ -29,13 +30,18 @@ test_that("brms::loo() yields the same results as loo_cv()", {
 # --------------- model diagnostics ---------------
 
 model_list <- list(
+  # full models:
   "diss" = model_diss,
   "part" = model_part,
+  # no CAR1 term:
   "diss_noar" = model_diss_noar,
-  "part" = model_part_noar,
+  "part_noar" = model_part_noar,
   # simulated data
   "sim_diss" = model_sim_diss,
-  "sim_part" = model_sim_part
+  "sim_part" = model_sim_part,
+  # default priors:
+  "diss_noprior" = model_noprior_diss,
+  "part_noprior" = model_noprior_part
 )
 
 sampler_params <- model_list %>%
@@ -44,7 +50,7 @@ sampler_params <- model_list %>%
     ~ get_sampler_params(.x$fit, inc_warmup = FALSE) %>%
       map(as_tibble) %>%
       bind_rows(.id = ".chain") %>%
-      mutate(max_treedepth = .x$fit@stan_args[[4]]$max_treedepth),
+      mutate(max_treedepth = .x$fit@stan_args[[4]]$max_depth),
     .id = "model"
   )
 

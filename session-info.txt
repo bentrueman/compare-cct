@@ -1,4 +1,4 @@
-─ Session info ───────────────────────────────────────────────────────────────
+─ Session info ─────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.3.0 (2023-04-21)
  os       macOS Ventura 13.2.1
@@ -8,11 +8,11 @@
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       America/Halifax
- date     2023-06-19
+ date     2023-06-28
  rstudio  2023.06.0+421 Mountain Hydrangea (desktop)
  pandoc   NA
 
-─ Packages ───────────────────────────────────────────────────────────────────
+─ Packages ─────────────────────────────────────────────────────────────────────────
  package        * version    date (UTC) lib source
  abind            1.4-5      2016-07-21 [1] CRAN (R 4.3.0)
  arrayhelpers     1.1-0      2020-02-04 [1] CRAN (R 4.3.0)
@@ -40,7 +40,7 @@
  crosstalk        1.2.0      2021-11-04 [1] CRAN (R 4.3.0)
  data.table       1.14.8     2023-02-17 [1] CRAN (R 4.3.0)
  devtools       * 2.4.5      2022-10-11 [1] CRAN (R 4.3.0)
- digest           0.6.31     2022-12-11 [1] CRAN (R 4.3.0)
+ digest           0.6.32     2023-06-26 [1] CRAN (R 4.3.0)
  distributional   0.3.2      2023-03-22 [1] CRAN (R 4.3.0)
  dplyr          * 1.1.2      2023-04-20 [1] CRAN (R 4.3.0)
  DT               0.28       2023-05-18 [1] CRAN (R 4.3.0)
@@ -109,7 +109,7 @@
  remotes          2.4.2      2021-11-30 [1] CRAN (R 4.3.0)
  reshape2         1.4.4      2020-04-09 [1] CRAN (R 4.3.0)
  rlang            1.1.1      2023-04-28 [1] CRAN (R 4.3.0)
- rstan          * 2.21.8     2023-01-17 [1] CRAN (R 4.3.0)
+ rstan            2.21.8     2023-01-17 [1] CRAN (R 4.3.0)
  rstantools       2.3.1      2023-03-30 [1] CRAN (R 4.3.0)
  rstudioapi       0.14       2022-08-22 [1] CRAN (R 4.3.0)
  scales           1.2.1      2022-08-20 [1] CRAN (R 4.3.0)
@@ -119,7 +119,7 @@
  shinystan        2.6.0      2022-03-03 [1] CRAN (R 4.3.0)
  shinythemes      1.2.0      2021-01-25 [1] CRAN (R 4.3.0)
  snakecase        0.11.0     2019-05-25 [1] CRAN (R 4.3.0)
- StanHeaders    * 2.26.27    2023-06-14 [1] CRAN (R 4.3.0)
+ StanHeaders      2.26.27    2023-06-14 [1] CRAN (R 4.3.0)
  stringi          1.7.12     2023-01-11 [1] CRAN (R 4.3.0)
  stringr        * 1.5.0      2022-12-02 [1] CRAN (R 4.3.0)
  survival         3.5-5      2023-03-12 [1] CRAN (R 4.3.0)
@@ -149,4 +149,4 @@
 
  [1] /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library
 
-──────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────────

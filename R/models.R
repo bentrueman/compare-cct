@@ -1,10 +1,11 @@
 
+# TO DO: rerun models "part", "diss_noar", and "sim_part" with 2000 sampling iterations per chain to meet min ESS
+
 # fit GAMs to data and simulated data (models are loaded from CSVs by default):
 
 #------------------ setup ------------------
 
 source("R/formulas.R")
-library("rstan")
 library("bgamcar1")
 library("dplyr")
 
@@ -21,7 +22,7 @@ knots_yday <- c(0, 1)
 
 #------------------ models ------------------
 
-# n.b., each takes ~30 min to fit on a 2017 Macbook Pro
+# n.b., each takes between 30 mins and 1.5 hrs to fit on a 2017 Macbook Pro
 
 model_diss <- fit_stan_model(
   file = "models/model_diss",
@@ -42,6 +43,7 @@ model_part <- fit_stan_model(
   bdata = model_in,
   bpriors = prior_part,
   backend = "cmdstanr",
+  iter_sampling = 2000,
   save_warmup = FALSE
 )
 
@@ -54,7 +56,8 @@ model_diss_noar <- fit_stan_model(
   knots = list(date_yday = knots_yday),
   backend = "cmdstanr",
   save_warmup = FALSE,
-  max_treedepth = 12
+  max_treedepth = 12,
+  iter_sampling = 2000
 )
 
 model_part_noar <- fit_stan_model(
@@ -85,7 +88,8 @@ model_sim_part <- fit_stan_model(
   bdata = model_in_sim,
   bpriors = prior_part,
   save_warmup = FALSE,
-  backend = "cmdstanr"
+  backend = "cmdstanr",
+  iter_sampling = 2000
 )
 
 model_noprior_diss <- fit_stan_model(
